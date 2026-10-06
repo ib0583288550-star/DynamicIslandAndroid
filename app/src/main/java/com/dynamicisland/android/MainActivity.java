@@ -45,6 +45,7 @@ public class MainActivity extends Activity {
   demo.setOnClickListener(v->{if(!Settings.canDrawOverlays(this))startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));else startService(new Intent(this,IslandService.class).putExtra("demo",true));});
   size.setOnClickListener(v->showSizeDialog(pref));
   timeout.setOnClickListener(v->showTimeoutDialog(pref));
+  Button autoClose=new Button(this);autoClose.setText("⏱️  זמן סגירה אוטומטית לאחר פתיחה");autoClose.setTextColor(Color.WHITE);autoClose.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams acp=new LinearLayout.LayoutParams(-1,dp(54));acp.setMargins(0,dp(12),0,0);r.addView(autoClose,acp);autoClose.setOnClickListener(v->showAutoCloseDialog(pref));
  }
 
  void showSizeDialog(SharedPreferences pref){
@@ -61,6 +62,14 @@ public class MainActivity extends Activity {
   new AlertDialog.Builder(this).setTitle("התאמת האי").setView(box).setPositiveButton("סיום",null).setNegativeButton("ביטול",null).show();
  }
  SeekBar.OnSeekBarChangeListener simple(Runnable r){return new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean f){r.run();}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}};}
+
+ void showAutoCloseDialog(SharedPreferences pref){
+  String[] items={"1 שנייה","2 שניות","3 שניות","4 שניות","5 שניות","לא לסגור אוטומטית"};
+  int[] vals={1000,2000,3000,4000,5000,0};
+  int cur=pref.getInt("auto_close_ms",3000),checked=2;
+  for(int i=0;i<vals.length;i++)if(vals[i]==cur)checked=i;
+  new AlertDialog.Builder(this).setTitle("אחרי כמה זמן האי ייסגר?").setSingleChoiceItems(items,checked,(d,which)->{pref.edit().putInt("auto_close_ms",vals[which]).apply();d.dismiss();}).setNegativeButton("ביטול",null).show();
+ }
 
  void showTimeoutDialog(SharedPreferences pref){
   String[] items={"1 שנייה","2 שניות","3 שניות","5 שניות","10 שניות","עד שמגיע אירוע חדש"};
