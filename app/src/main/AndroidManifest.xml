@@ -8,7 +8,9 @@
 
     <application
         android:theme="@style/AppTheme"
-        android:label="Dynamic Island"
+        android:label="אי דינמי"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:allowBackup="false"
         android:supportsRtl="true">
 
@@ -21,7 +23,7 @@
 
         <service
             android:name=".IslandNotificationListener"
-            android:label="Dynamic Island Notifications"
+            android:label="התראות — אי דינמי"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
             android:exported="true">
             <intent-filter>
