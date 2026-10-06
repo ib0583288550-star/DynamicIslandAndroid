@@ -41,9 +41,9 @@ public class IslandService extends Service {
  Notification notifyMe(){String c="island";NotificationManager n=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);if(Build.VERSION.SDK_INT>=26)n.createNotificationChannel(new NotificationChannel(c,"Dynamic Island",NotificationManager.IMPORTANCE_LOW));return new Notification.Builder(this,c).setContentTitle("אי דינמי פעיל").setContentText("האי הדינמי פועל").setSmallIcon(android.R.drawable.ic_dialog_info).setOngoing(true).build();}
 
  void show(){if(!Settings.canDrawOverlays(this))return;wm=(WindowManager)getSystemService(WINDOW_SERVICE);
-  pill=new LinearLayout(this);pill.setOrientation(LinearLayout.VERTICAL);pill.setGravity(Gravity.CENTER);pill.setPadding(dp(12),dp(7),dp(12),dp(7));pill.setBackground(bg(Color.BLACK,50));
+  pill=new LinearLayout(this);pill.setOrientation(LinearLayout.VERTICAL);pill.setGravity(Gravity.CENTER);pill.setPadding(dp(12),dp(7),dp(12),dp(7));pill.setBackground(bg(Color.BLACK,22));
   topRow=new LinearLayout(this);topRow.setOrientation(LinearLayout.HORIZONTAL);topRow.setGravity(Gravity.CENTER_VERTICAL);
-  artwork=new ImageView(this);artwork.setScaleType(ImageView.ScaleType.CENTER_CROP);artwork.setBackground(bg(Color.rgb(45,45,55),18));
+  artwork=new ImageView(this);artwork.setScaleType(ImageView.ScaleType.CENTER_CROP);artwork.setBackground(bg(Color.rgb(45,45,55),10));
   icon=new TextView(this);icon.setTextSize(12);icon.setGravity(Gravity.CENTER);
   label=new TextView(this);label.setTextColor(Color.WHITE);label.setTextSize(13);label.setTypeface(null,1);label.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);label.setSingleLine(false);label.setMaxLines(2);label.setEllipsize(android.text.TextUtils.TruncateAt.END);
   sub=new TextView(this);sub.setTextColor(Color.LTGRAY);sub.setTextSize(10);sub.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);sub.setSingleLine(false);sub.setMaxLines(2);sub.setEllipsize(android.text.TextUtils.TruncateAt.END);
@@ -76,7 +76,7 @@ public class IslandService extends Service {
  void toggleMedia(){if(mediaController==null)return;try{if(mediaPlaying)mediaController.getTransportControls().pause();else mediaController.getTransportControls().play();}catch(Exception ignored){}h.postDelayed(()->{readMedia();render();},180);}
  void sendMedia(long action){if(mediaController==null)return;try{if(action==PlaybackState.ACTION_SKIP_TO_PREVIOUS)mediaController.getTransportControls().skipToPrevious();else mediaController.getTransportControls().skipToNext();}catch(Exception ignored){}h.postDelayed(()->{readMedia();render();},180);}
  void openAssistant(){try{Intent a=new Intent(Intent.ACTION_ASSIST);a.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);startActivity(a);}catch(Exception ignored){}}
- void openMusicApp(){try{String pkg=mediaPackage.isEmpty()?(mediaController==null?null:mediaController.getPackageName()):mediaPackage;Intent launch=pkg==null?null:getPackageManager().getLaunchIntentForPackage(pkg);if(launch!=null){launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP);startActivity(launch);return;}Intent a=new Intent(Intent.ACTION_MAIN);a.addCategory(Intent.CATEGORY_APP_MUSIC);a.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);startActivity(a);}catch(Exception ignored){}}
+ void openMusicApp(){try{if(mediaController!=null){android.app.PendingIntent pi=mediaController.getSessionActivity();if(pi!=null){try{pi.send();return;}catch(Exception ignored){}}}String pkg=mediaPackage.isEmpty()?(mediaController==null?null:mediaController.getPackageName()):mediaPackage;if(pkg!=null&&!pkg.isEmpty()){Intent launch=getPackageManager().getLaunchIntentForPackage(pkg);if(launch!=null){launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);startActivity(launch);return;}}}catch(Exception ignored){}}
  void updateMedia(String title,boolean playing){mediaTitle=title==null||title.isEmpty()?"מוזיקה":title;mediaPlaying=playing;mediaActive=true;render();}
 
  void render(){if(pill==null)return;
@@ -86,7 +86,7 @@ public class IslandService extends Service {
   switchButton.setVisibility(showSwitch && expanded?View.VISIBLE:View.GONE);
   aiButton.setVisibility(expanded && voiceAssistantButton?View.VISIBLE:View.GONE);
   if(expanded){
-   pill.setBackground(bg(Color.BLACK,58));controls.setVisibility(showPlayer?View.VISIBLE:View.GONE);
+   pill.setBackground(bg(Color.BLACK,24));controls.setVisibility(showPlayer?View.VISIBLE:View.GONE);
    timeText.setVisibility(showPlayer&&expanded?View.VISIBLE:View.GONE);
    artwork.getLayoutParams().width=dp(showPlayer?56:32);artwork.getLayoutParams().height=dp(showPlayer?56:32);artwork.requestLayout();
   }else{
