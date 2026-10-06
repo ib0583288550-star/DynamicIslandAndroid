@@ -15,6 +15,7 @@ public class IslandNotificationListener extends NotificationListenerService {
  MediaSessionManager.OnActiveSessionsChangedListener mediaListener;
  static MediaController pendingController;
  static String pendingTitle="", pendingDetail="";
+ static android.app.PendingIntent pendingNotificationIntent;
 
  MediaController chooseMedia(List<MediaController> sessions){
   if(sessions==null||sessions.isEmpty())return null;
@@ -72,6 +73,8 @@ public class IslandNotificationListener extends NotificationListenerService {
     if(title==null&&text==null)continue;
     pendingTitle=title==null?"התראה":title.toString();
     pendingDetail=text==null?"":text.toString();
+    pendingNotificationIntent=n.contentIntent;
+    IslandService.showNotificationIntent(pendingNotificationIntent);
     IslandService.event(pendingTitle,pendingDetail);
     break;
    }
@@ -97,6 +100,8 @@ public class IslandNotificationListener extends NotificationListenerService {
   if(title==null&&text==null)return;
   pendingTitle=title==null?"התראה":title.toString();
   pendingDetail=text==null?"":text.toString();
+  pendingNotificationIntent=n.contentIntent;
+  IslandService.showNotificationIntent(pendingNotificationIntent);
   IslandService.event(pendingTitle,pendingDetail);
   // Do not cancel the system notification. Cancelling notifications here can interfere with media/player notifications.
  }
