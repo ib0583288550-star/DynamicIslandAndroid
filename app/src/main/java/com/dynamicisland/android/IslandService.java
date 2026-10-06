@@ -35,7 +35,7 @@ public class IslandService extends Service {
 
  void loadSettings(){SharedPreferences p=getSharedPreferences("island_settings",MODE_PRIVATE);widthDp=p.getInt("width_dp",218);heightDp=p.getInt("height_dp",42);topDp=p.getInt("top_dp",6);eventTimeout=p.getInt("notification_timeout_ms",3200);autoCloseMs=p.getInt("auto_close_ms",3000);voiceAssistantButton=p.getBoolean("voice_assistant_button",true);}
  public static void applySettings(){if(current!=null){current.loadSettings();current.applyLayout();current.render();}}
- void applyLayout(){if(pill==null||wm==null)return;WindowManager.LayoutParams p=(WindowManager.LayoutParams)pill.getLayoutParams();p.width=dp(expanded?Math.max(widthDp,320):widthDp);p.height=dp(expanded?210:heightDp);p.y=dp(topDp);try{wm.updateViewLayout(pill,p);}catch(Exception ignored){}}
+ void applyLayout(){if(pill==null||wm==null)return;WindowManager.LayoutParams p=(WindowManager.LayoutParams)pill.getLayoutParams();p.width=dp(expanded?Math.min(Math.max(widthDp,280),380):widthDp);p.height=dp(expanded?180:heightDp);p.y=dp(topDp);try{wm.updateViewLayout(pill,p);}catch(Exception ignored){}}
 
  Notification notifyMe(){String c="island";NotificationManager n=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);if(Build.VERSION.SDK_INT>=26)n.createNotificationChannel(new NotificationChannel(c,"Dynamic Island",NotificationManager.IMPORTANCE_LOW));return new Notification.Builder(this,c).setContentTitle("אי דינמי פעיל").setContentText("האי הדינמי פועל").setSmallIcon(android.R.drawable.ic_dialog_info).setOngoing(true).build();}
 
@@ -44,8 +44,8 @@ public class IslandService extends Service {
   topRow=new LinearLayout(this);topRow.setOrientation(LinearLayout.HORIZONTAL);topRow.setGravity(Gravity.CENTER_VERTICAL);
   artwork=new ImageView(this);artwork.setScaleType(ImageView.ScaleType.CENTER_CROP);artwork.setBackground(bg(Color.rgb(45,45,55),18));
   icon=new TextView(this);icon.setTextSize(12);icon.setGravity(Gravity.CENTER);
-  label=new TextView(this);label.setTextColor(Color.WHITE);label.setTextSize(14);label.setTypeface(null,1);label.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);label.setSingleLine(true);label.setEllipsize(android.text.TextUtils.TruncateAt.MARQUEE);label.setMarqueeRepeatLimit(1);
-  sub=new TextView(this);sub.setTextColor(Color.LTGRAY);sub.setTextSize(11);sub.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);sub.setSingleLine(true);sub.setEllipsize(android.text.TextUtils.TruncateAt.END);
+  label=new TextView(this);label.setTextColor(Color.WHITE);label.setTextSize(14);label.setTypeface(null,1);label.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);label.setSingleLine(false);label.setMaxLines(2);label.setEllipsize(android.text.TextUtils.TruncateAt.END);
+  sub=new TextView(this);sub.setTextColor(Color.LTGRAY);sub.setTextSize(11);sub.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);sub.setSingleLine(false);sub.setMaxLines(2);sub.setEllipsize(android.text.TextUtils.TruncateAt.END);
   aiButton=new ImageButton(this);aiButton.setImageResource(android.R.drawable.ic_menu_manage);aiButton.setColorFilter(Color.WHITE);aiButton.setBackground(bg(Color.rgb(20,20,20),18));aiButton.setContentDescription("עוזר AI");aiButton.setOnClickListener(v->openAssistant());
   switchButton=new ImageButton(this);switchButton.setImageResource(android.R.drawable.ic_dialog_email);switchButton.setColorFilter(Color.WHITE);switchButton.setBackground(bg(Color.rgb(20,20,20),18));switchButton.setContentDescription("מעבר בין נגן להתראות");
   switchButton.setOnClickListener(v->{userSelectedView=true;if(mediaActive && notificationActive){showingPlayer=!showingPlayer;render();}else if(notificationActive){showingPlayer=false;render();}else if(mediaActive){showingPlayer=true;render();}});
@@ -75,7 +75,7 @@ public class IslandService extends Service {
  void toggleMedia(){if(mediaController==null)return;try{if(mediaPlaying)mediaController.getTransportControls().pause();else mediaController.getTransportControls().play();}catch(Exception ignored){}h.postDelayed(()->{readMedia();render();},180);}
  void sendMedia(long action){if(mediaController==null)return;try{if(action==PlaybackState.ACTION_SKIP_TO_PREVIOUS)mediaController.getTransportControls().skipToPrevious();else mediaController.getTransportControls().skipToNext();}catch(Exception ignored){}h.postDelayed(()->{readMedia();render();},180);}
  void openAssistant(){try{Intent a=new Intent(Intent.ACTION_ASSIST);a.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);startActivity(a);}catch(Exception ignored){}}
- void openMusicApp(){if(mediaController==null)return;try{String pkg=mediaController.getPackageName();Intent launch=getPackageManager().getLaunchIntentForPackage(pkg);if(launch!=null){launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP);startActivity(launch);}}catch(Exception ignored){}}
+ void openMusicApp(){try{String pkg=mediaController==null?null:mediaController.getPackageName();Intent launch=pkg==null?null:getPackageManager().getLaunchIntentForPackage(pkg);if(launch!=null){launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP);startActivity(launch);return;}Intent a=new Intent(Intent.ACTION_MAIN);a.addCategory(Intent.CATEGORY_APP_MUSIC);a.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);startActivity(a);}catch(Exception ignored){}}
  void updateMedia(String title,boolean playing){mediaTitle=title==null||title.isEmpty()?"מוזיקה":title;mediaPlaying=playing;mediaActive=true;render();}
 
  void render(){if(pill==null)return;
@@ -85,9 +85,9 @@ public class IslandService extends Service {
   switchButton.setVisibility(showSwitch && expanded?View.VISIBLE:View.GONE);
   aiButton.setVisibility(expanded && voiceAssistantButton?View.VISIBLE:View.GONE);
   if(expanded){
-   pill.setBackground(bg(Color.BLACK,110));controls.setVisibility(showPlayer?View.VISIBLE:View.GONE);
-   timeText.setVisibility(showPlayer?View.VISIBLE:View.GONE);
-   artwork.getLayoutParams().width=dp(showPlayer?92:40);artwork.getLayoutParams().height=dp(showPlayer?92:40);artwork.requestLayout();
+   pill.setBackground(bg(Color.BLACK,70));controls.setVisibility(showPlayer?View.VISIBLE:View.GONE);
+   timeText.setVisibility(showPlayer&&expanded?View.VISIBLE:View.GONE);
+   artwork.getLayoutParams().width=dp(showPlayer?76:34);artwork.getLayoutParams().height=dp(showPlayer?76:34);artwork.requestLayout();
   }else{
    pill.setBackground(bg(Color.BLACK,50));controls.setVisibility(View.GONE);timeText.setVisibility(View.GONE);
    artwork.getLayoutParams().width=dp(34);artwork.getLayoutParams().height=dp(34);artwork.requestLayout();
@@ -105,7 +105,7 @@ public class IslandService extends Service {
   }
   if(controls.getChildCount()>1)((Button)controls.getChildAt(1)).setText(mediaPlaying?"Ⅱ":"▶");
  }
- void toggle(){expanded=!expanded;int oldW=pill.getLayoutParams().width,oldH=pill.getLayoutParams().height,oldY=((WindowManager.LayoutParams)pill.getLayoutParams()).y;int newW=dp(expanded?Math.max(widthDp,320):widthDp),newH=dp(expanded?210:heightDp),newY=dp(topDp+(expanded?2:0));animateSize(oldW,oldH,oldY,newW,newH,newY);pill.setPadding(dp(14),dp(expanded?10:7),dp(14),dp(expanded?10:7));render();h.removeCallbacks(autoCollapse);if(expanded&&autoCloseMs>0)h.postDelayed(autoCollapse,autoCloseMs);}
+ void toggle(){expanded=!expanded;int oldW=pill.getLayoutParams().width,oldH=pill.getLayoutParams().height,oldY=((WindowManager.LayoutParams)pill.getLayoutParams()).y;int newW=dp(expanded?Math.min(Math.max(widthDp,280),380):widthDp),newH=dp(expanded?180:heightDp),newY=dp(topDp+(expanded?2:0));animateSize(oldW,oldH,oldY,newW,newH,newY);pill.setPadding(dp(14),dp(expanded?10:7),dp(14),dp(expanded?10:7));render();h.removeCallbacks(autoCollapse);if(expanded&&autoCloseMs>0)h.postDelayed(autoCollapse,autoCloseMs);}
  void animateSize(int oldW,int oldH,int oldY,int newW,int newH,int newY){ValueAnimator a=ValueAnimator.ofFloat(0f,1f);a.setDuration(220);a.setInterpolator(new DecelerateInterpolator());a.addUpdateListener(v->{float t=(Float)v.getAnimatedValue();WindowManager.LayoutParams q=(WindowManager.LayoutParams)pill.getLayoutParams();q.width=(int)(oldW+(newW-oldW)*t);q.height=(int)(oldH+(newH-oldH)*t);q.y=(int)(oldY+(newY-oldY)*t);try{wm.updateViewLayout(pill,q);}catch(Exception ignored){}});a.start();}
  void showEvent(String title,String detail){if(pill==null)return;notificationTitle=title==null?"התראה":title;notificationDetail=detail==null?"":detail;notificationActive=true;if(!userSelectedView)showingPlayer=false;render();h.removeCallbacks(eventReset);if(eventTimeout>0)h.postDelayed(eventReset,eventTimeout);}
  final Runnable autoCollapse=()->{if(expanded){expanded=false;applyLayout();pill.setPadding(dp(12),dp(7),dp(12),dp(7));render();}};
