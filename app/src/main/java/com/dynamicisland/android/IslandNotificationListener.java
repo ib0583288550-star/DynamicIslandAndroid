@@ -42,6 +42,7 @@ public class IslandNotificationListener extends NotificationListenerService {
  }
 
  @Override public void onNotificationPosted(StatusBarNotification sbn) {
+  if(getPackageName().equals(sbn.getPackageName()))return;
   Notification n=sbn.getNotification();
   if(n==null)return;
   Bundle e=n.extras;
