@@ -15,7 +15,8 @@ public class IslandService extends Service {
     LinearLayout pill;
     TextView icon,label,sub;
     Handler h=new Handler(Looper.getMainLooper());
-    boolean expanded=false;\n    long demoUntil=0;
+    boolean expanded=false;
+    long demoUntil=0;
     int battery=100;
     boolean charging=false;
 
