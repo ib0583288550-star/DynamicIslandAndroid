@@ -65,7 +65,7 @@ public class IslandService extends Service {
   pill.addView(timeText,new LinearLayout.LayoutParams(-1,dp(18)));
   controls=new LinearLayout(this);controls.setOrientation(LinearLayout.HORIZONTAL);controls.setGravity(Gravity.CENTER);controls.setVisibility(View.GONE);pill.addView(controls,new LinearLayout.LayoutParams(-1,dp(40)));
   addControl("⏭",v->sendMedia(PlaybackState.ACTION_SKIP_TO_NEXT));addControl("▶",v->toggleMedia());addControl("⏮",v->sendMedia(PlaybackState.ACTION_SKIP_TO_PREVIOUS));
-  pill.setOnClickListener(v->toggle());
+  pill.setOnClickListener(v->{if(Settings.canDrawOverlays(this))toggle();});
   artwork.setOnClickListener(v->openMusicApp());
   label.setOnClickListener(v->{if(notificationActive&&!showingPlayer)openNotification();else if(mediaActive)openMusicApp();});
   sub.setOnClickListener(v->{if(notificationActive&&!showingPlayer)openNotification();else if(mediaActive)openMusicApp();});
