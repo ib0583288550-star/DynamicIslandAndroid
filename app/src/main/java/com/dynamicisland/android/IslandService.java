@@ -23,7 +23,7 @@ public class IslandService extends Service {
  boolean userSelectedView=false;
  String notificationTitle="", notificationDetail="";
  String mediaTitle="מוזיקה", mediaArtist="", mediaTime="";
- WindowManager wm; LinearLayout pill,topRow,controls; TextView icon,label,sub,timeText; ImageButton switchButton; ImageView artwork;
+ WindowManager wm; LinearLayout pill,topRow,controls; TextView icon,label,sub,timeText; ImageButton switchButton, aiButton; ImageView artwork;
  Bitmap artworkBitmap; Handler h=new Handler(Looper.getMainLooper());
  boolean expanded=false; public static IslandService current;
  int widthDp=218,heightDp=42,topDp=6; int eventTimeout=3200,autoCloseMs=3000;
@@ -46,6 +46,7 @@ public class IslandService extends Service {
   icon=new TextView(this);icon.setTextSize(12);icon.setGravity(Gravity.CENTER);
   label=new TextView(this);label.setTextColor(Color.WHITE);label.setTextSize(14);label.setTypeface(null,1);label.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);label.setSingleLine(true);label.setEllipsize(android.text.TextUtils.TruncateAt.MARQUEE);label.setMarqueeRepeatLimit(1);
   sub=new TextView(this);sub.setTextColor(Color.LTGRAY);sub.setTextSize(11);sub.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);sub.setSingleLine(true);sub.setEllipsize(android.text.TextUtils.TruncateAt.END);
+  aiButton=new ImageButton(this);aiButton.setImageResource(android.R.drawable.ic_menu_manage);aiButton.setColorFilter(Color.WHITE);aiButton.setBackground(bg(Color.rgb(20,20,20),18));aiButton.setContentDescription("עוזר AI");aiButton.setOnClickListener(v->openAssistant());
   switchButton=new ImageButton(this);switchButton.setImageResource(android.R.drawable.ic_dialog_email);switchButton.setColorFilter(Color.WHITE);switchButton.setBackground(bg(Color.rgb(20,20,20),18));switchButton.setContentDescription("מעבר בין נגן להתראות");
   switchButton.setOnClickListener(v->{userSelectedView=true;if(mediaActive && notificationActive){showingPlayer=!showingPlayer;render();}else if(notificationActive){showingPlayer=false;render();}else if(mediaActive){showingPlayer=true;render();}});
   timeText=new TextView(this);timeText.setTextColor(Color.LTGRAY);timeText.setTextSize(10);timeText.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);timeText.setSingleLine(true);
@@ -55,6 +56,7 @@ public class IslandService extends Service {
   textBox.addView(label,new LinearLayout.LayoutParams(-1,0,1));
   textBox.addView(sub,new LinearLayout.LayoutParams(-1,0,1));
   topRow.addView(textBox,new LinearLayout.LayoutParams(0,-1,1));
+  topRow.addView(aiButton,new LinearLayout.LayoutParams(dp(30),dp(30)));
   topRow.addView(switchButton,new LinearLayout.LayoutParams(dp(30),dp(30)));
   pill.addView(topRow,new LinearLayout.LayoutParams(-1,0,1));
   pill.addView(timeText,new LinearLayout.LayoutParams(-1,dp(18)));
@@ -72,6 +74,7 @@ public class IslandService extends Service {
  void readMedia(){if(mediaController==null)return;try{PlaybackState ps=mediaController.getPlaybackState();mediaPlaying=ps!=null&&ps.getState()==PlaybackState.STATE_PLAYING;MediaMetadata md=mediaController.getMetadata();String t=md==null?null:md.getString(MediaMetadata.METADATA_KEY_TITLE);CharSequence a=md==null?null:md.getText(MediaMetadata.METADATA_KEY_ARTIST);mediaArtist=a==null?"":a.toString();artworkBitmap=md==null?null:md.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);mediaTitle=t==null||t.isEmpty()?"מוזיקה":t;long pos=ps==null?0:ps.getPosition();long dur=md==null?0:md.getLong(MediaMetadata.METADATA_KEY_DURATION);mediaTime=fmt(pos)+" / "+fmt(dur); }catch(Exception ignored){}}
  void toggleMedia(){if(mediaController==null)return;try{if(mediaPlaying)mediaController.getTransportControls().pause();else mediaController.getTransportControls().play();}catch(Exception ignored){}h.postDelayed(()->{readMedia();render();},180);}
  void sendMedia(long action){if(mediaController==null)return;try{if(action==PlaybackState.ACTION_SKIP_TO_PREVIOUS)mediaController.getTransportControls().skipToPrevious();else mediaController.getTransportControls().skipToNext();}catch(Exception ignored){}h.postDelayed(()->{readMedia();render();},180);}
+ void openAssistant(){try{Intent a=new Intent(Intent.ACTION_ASSIST);a.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);startActivity(a);}catch(Exception ignored){}}
  void openMusicApp(){if(mediaController==null)return;try{String pkg=mediaController.getPackageName();Intent launch=getPackageManager().getLaunchIntentForPackage(pkg);if(launch!=null){launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP);startActivity(launch);}}catch(Exception ignored){}}
  void updateMedia(String title,boolean playing){mediaTitle=title==null||title.isEmpty()?"מוזיקה":title;mediaPlaying=playing;mediaActive=true;render();}
 
@@ -80,6 +83,7 @@ public class IslandService extends Service {
   boolean showPlayer=mediaActive && (showingPlayer || !notificationActive);
   boolean showSwitch=mediaActive||notificationActive;
   switchButton.setVisibility(showSwitch && expanded?View.VISIBLE:View.GONE);
+  aiButton.setVisibility(expanded?View.VISIBLE:View.GONE);
   if(expanded){
    pill.setBackground(bg(Color.BLACK,110));controls.setVisibility(showPlayer?View.VISIBLE:View.GONE);
    timeText.setVisibility(showPlayer?View.VISIBLE:View.GONE);
@@ -97,7 +101,7 @@ public class IslandService extends Service {
    artwork.setVisibility(View.VISIBLE);
    switchButton.setImageResource(android.R.drawable.ic_popup_sync);
   }else{
-   icon.setText("");label.setText("");sub.setText("");timeText.setText("");artwork.setVisibility(View.GONE);switchButton.setVisibility(View.GONE);
+   icon.setText("");label.setText("");sub.setText("");timeText.setText("");artwork.setVisibility(View.GONE);switchButton.setVisibility(View.GONE);aiButton.setVisibility(View.GONE);
   }
   if(controls.getChildCount()>1)((Button)controls.getChildAt(1)).setText(mediaPlaying?"Ⅱ":"▶");
  }
