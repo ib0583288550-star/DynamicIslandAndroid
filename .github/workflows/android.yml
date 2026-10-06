@@ -24,3 +24,5 @@ jobs:
           name: DynamicIsland-debug
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+# build verification trigger
