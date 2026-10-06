@@ -40,7 +40,7 @@ public class MainActivity extends Activity {
   scroll.addView(r);
   setContentView(scroll);
 
-  start.setOnClickListener(v->{if(!Settings.canDrawOverlays(this)){startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));return;} pref.edit().putBoolean("auto_start",true).apply(); startService(new Intent(this,IslandService.class));});
+  start.setOnClickListener(v->{if(!Settings.canDrawOverlays(this)){startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));return;} try{if(!Settings.Secure.getString(getContentResolver(),"enabled_notification_listeners").contains(getPackageName())){startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));return;}}catch(Exception ignored){} pref.edit().putBoolean("auto_start",true).apply(); startService(new Intent(this,IslandService.class));});
   notifAccess.setOnClickListener(v->startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")));
   demo.setOnClickListener(v->{if(!Settings.canDrawOverlays(this))startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));else startService(new Intent(this,IslandService.class).putExtra("demo",true));});
   size.setOnClickListener(v->showSizeDialog(pref));
