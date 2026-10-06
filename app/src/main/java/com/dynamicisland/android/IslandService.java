@@ -113,12 +113,11 @@ public class IslandService extends Service {
         mediaTitle=title==null||title.isEmpty()?"מדיה":title;
         mediaPlaying=playing;
         if(pill!=null){
-            demoUntil=System.currentTimeMillis()+2600;
             icon.setText(playing?"▶":"Ⅱ");
             icon.setTextColor(Color.rgb(255,90,180));
             label.setText(mediaTitle);
             sub.setText(playing?"מנגן":"מושהה");
-            h.postDelayed(()->{demoUntil=0;refresh();},2600);
+            h.postDelayed(()->refresh(),2600);
         }
     }
 
@@ -127,6 +126,7 @@ public class IslandService extends Service {
         timerLabel=title==null?"טיימר":title;
         h.post(timerTick);
     }
+
     final Runnable timerTick=new Runnable(){
         public void run(){
             if(pill==null)return;
@@ -156,20 +156,22 @@ public class IslandService extends Service {
         sub.setText(battery+"%");
         if(expanded){
             label.setText(charging?"טעינה פעילה":"האי הדינמי");
-            sub.setText("🔋 "+battery+"%");
+            sub.setText("🔋 "+battery+"%   •   Wi‑Fi   •   פעיל");
         }
     }
 
     void toggle(){
         expanded=!expanded;
         WindowManager.LayoutParams p=(WindowManager.LayoutParams)pill.getLayoutParams();
-        p.width=expanded?dp(350):dp(218);
-        p.height=expanded?dp(132):dp(42);
-        p.y=expanded?dp(8):dp(6);
+        int oldW=p.width, oldH=p.height, oldY=p.y;
+        int newW=expanded?dp(350):dp(218);
+        int newH=expanded?dp(132):dp(42);
+        int newY=expanded?dp(8):dp(6);
         pill.setOrientation(expanded?LinearLayout.VERTICAL:LinearLayout.HORIZONTAL);
         pill.setPadding(dp(14),dp(8),dp(14),dp(8));
         pill.setBackground(bg(expanded?Color.rgb(25,18,38):Color.rgb(5,5,8),expanded?30:50));
-        animateSize(p);
+        p.width=newW; p.height=newH; p.y=newY;
+        animateSize(oldW,oldH,oldY,newW,newH,newY);
         if(expanded){
             icon.setText(charging?"⚡":"◉");
             label.setText(charging?"⚡  טעינה":"✨  Dynamic Island");
@@ -177,21 +179,38 @@ public class IslandService extends Service {
         }else refresh();
     }
 
-    void animateSize(WindowManager.LayoutParams target){
-        final int oldW=pill.getLayoutParams().width, oldH=pill.getLayoutParams().height;
+    void animateSize(int oldW,int oldH,int oldY,int newW,int newH,int newY){
         ValueAnimator a=ValueAnimator.ofFloat(0f,1f);
         a.setDuration(220);
         a.setInterpolator(new DecelerateInterpolator());
         a.addUpdateListener(v->{
             float t=(Float)v.getAnimatedValue();
             WindowManager.LayoutParams q=(WindowManager.LayoutParams)pill.getLayoutParams();
-            q.width=(int)(oldW+(target.width-oldW)*t);
-            q.height=(int)(oldH+(target.height-oldH)*t);
-            q.y=(int)(q.y+(target.y-q.y)*t);
+            q.width=(int)(oldW+(newW-oldW)*t);
+            q.height=(int)(oldH+(newH-oldH)*t);
+            q.y=(int)(oldY+(newY-oldY)*t);
             try{wm.updateViewLayout(pill,q);}catch(Exception ignored){}
         });
         a.start();
     }
+
+    void showEvent(String title,String detail,String symbol){
+        if(pill==null)return;
+        icon.setText(symbol==null?"●":symbol);
+        icon.setTextColor(Color.rgb(90,210,255));
+        label.setText(title==null?"התראה":title);
+        sub.setText(detail==null?"":detail);
+        pill.setBackground(bg(Color.rgb(24,35,48),36));
+        h.removeCallbacks(eventReset);
+        h.postDelayed(eventReset,3200);
+    }
+
+    final Runnable eventReset=()->{
+        if(pill!=null){
+            pill.setBackground(bg(expanded?Color.rgb(25,18,38):Color.rgb(5,5,8),expanded?30:50));
+            refresh();
+        }
+    };
 
     @Override public int onStartCommand(Intent i,int f,int id){
         if(i!=null && i.getBooleanExtra("demo",false)) demo();
