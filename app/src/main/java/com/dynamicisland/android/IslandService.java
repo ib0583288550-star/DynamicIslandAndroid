@@ -25,14 +25,14 @@ public class IslandService extends Service {
  WindowManager wm; LinearLayout pill,topRow,controls; TextView icon,label,sub,timeText; ImageButton switchButton; ImageView artwork;
  Bitmap artworkBitmap; Handler h=new Handler(Looper.getMainLooper());
  boolean expanded=false; public static IslandService current;
- int widthDp=218,heightDp=42,topDp=6; int eventTimeout=3200;
+ int widthDp=218,heightDp=42,topDp=6; int eventTimeout=3200,autoCloseMs=3000;
 
  int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
  GradientDrawable bg(int c,float r){GradientDrawable x=new GradientDrawable();x.setColor(c);x.setCornerRadius(dp(r));x.setStroke(dp(1),Color.argb(55,255,255,255));return x;}
 
  @Override public void onCreate(){super.onCreate();current=this;loadSettings();startForeground(7,notifyMe());show();if(IslandNotificationListener.pendingController!=null)setController(IslandNotificationListener.pendingController);if(!IslandNotificationListener.pendingTitle.isEmpty())showEvent(IslandNotificationListener.pendingTitle,IslandNotificationListener.pendingDetail);}
 
- void loadSettings(){SharedPreferences p=getSharedPreferences("island_settings",MODE_PRIVATE);widthDp=p.getInt("width_dp",218);heightDp=p.getInt("height_dp",42);topDp=p.getInt("top_dp",6);eventTimeout=p.getInt("notification_timeout_ms",3200);}
+ void loadSettings(){SharedPreferences p=getSharedPreferences("island_settings",MODE_PRIVATE);widthDp=p.getInt("width_dp",218);heightDp=p.getInt("height_dp",42);topDp=p.getInt("top_dp",6);eventTimeout=p.getInt("notification_timeout_ms",3200);autoCloseMs=p.getInt("auto_close_ms",3000);}
  public static void applySettings(){if(current!=null){current.loadSettings();current.applyLayout();current.render();}}
  void applyLayout(){if(pill==null||wm==null)return;WindowManager.LayoutParams p=(WindowManager.LayoutParams)pill.getLayoutParams();p.width=dp(expanded?Math.max(widthDp,320):widthDp);p.height=dp(expanded?190:heightDp);p.y=dp(topDp);try{wm.updateViewLayout(pill,p);}catch(Exception ignored){}}
 
@@ -76,7 +76,7 @@ public class IslandService extends Service {
   if(artwork!=null){if(artworkBitmap!=null)artwork.setImageBitmap(artworkBitmap);else artwork.setImageResource(android.R.drawable.ic_media_play);artwork.setVisibility(mediaActive?View.VISIBLE:View.GONE);}
   boolean showPlayer=mediaActive && (showingPlayer || !notificationActive);
   boolean showSwitch=mediaActive||notificationActive;
-  switchButton.setVisibility(showSwitch?View.VISIBLE:View.GONE);
+  switchButton.setVisibility(showSwitch && expanded?View.VISIBLE:View.GONE);
   if(expanded){
    pill.setBackground(bg(Color.BLACK,38));controls.setVisibility(showPlayer?View.VISIBLE:View.GONE);
    timeText.setVisibility(showPlayer?View.VISIBLE:View.GONE);
@@ -85,7 +85,7 @@ public class IslandService extends Service {
    pill.setBackground(bg(Color.BLACK,50));controls.setVisibility(View.GONE);timeText.setVisibility(View.GONE);
    artwork.getLayoutParams().width=dp(34);artwork.getLayoutParams().height=dp(34);artwork.requestLayout();
   }
-  if(notificationActive){
+  if(notificationActive && !showingPlayer){
    icon.setText("●");icon.setTextColor(Color.rgb(90,210,255));label.setText(notificationTitle);sub.setText(notificationDetail);timeText.setText("");
    artwork.setVisibility(View.GONE);
    switchButton.setImageResource(android.R.drawable.ic_menu_view);
@@ -98,9 +98,10 @@ public class IslandService extends Service {
   }
   if(controls.getChildCount()>1)((Button)controls.getChildAt(1)).setText(mediaPlaying?"Ⅱ":"▶");
  }
- void toggle(){expanded=!expanded;int oldW=pill.getLayoutParams().width,oldH=pill.getLayoutParams().height,oldY=((WindowManager.LayoutParams)pill.getLayoutParams()).y;int newW=dp(expanded?Math.max(widthDp,320):widthDp),newH=dp(expanded?190:heightDp),newY=dp(topDp+(expanded?2:0));animateSize(oldW,oldH,oldY,newW,newH,newY);pill.setPadding(dp(14),dp(expanded?10:7),dp(14),dp(expanded?10:7));render();}
+ void toggle(){expanded=!expanded;int oldW=pill.getLayoutParams().width,oldH=pill.getLayoutParams().height,oldY=((WindowManager.LayoutParams)pill.getLayoutParams()).y;int newW=dp(expanded?Math.max(widthDp,320):widthDp),newH=dp(expanded?190:heightDp),newY=dp(topDp+(expanded?2:0));animateSize(oldW,oldH,oldY,newW,newH,newY);pill.setPadding(dp(14),dp(expanded?10:7),dp(14),dp(expanded?10:7));render();h.removeCallbacks(autoCollapse);if(expanded&&autoCloseMs>0)h.postDelayed(autoCollapse,autoCloseMs);}
  void animateSize(int oldW,int oldH,int oldY,int newW,int newH,int newY){ValueAnimator a=ValueAnimator.ofFloat(0f,1f);a.setDuration(220);a.setInterpolator(new DecelerateInterpolator());a.addUpdateListener(v->{float t=(Float)v.getAnimatedValue();WindowManager.LayoutParams q=(WindowManager.LayoutParams)pill.getLayoutParams();q.width=(int)(oldW+(newW-oldW)*t);q.height=(int)(oldH+(newH-oldH)*t);q.y=(int)(oldY+(newY-oldY)*t);try{wm.updateViewLayout(pill,q);}catch(Exception ignored){}});a.start();}
  void showEvent(String title,String detail){if(pill==null)return;notificationTitle=title==null?"התראה":title;notificationDetail=detail==null?"":detail;notificationActive=true;showingPlayer=false;render();h.removeCallbacks(eventReset);if(eventTimeout>0)h.postDelayed(eventReset,eventTimeout);}
+ final Runnable autoCollapse=()->{if(expanded){expanded=false;applyLayout();pill.setPadding(dp(12),dp(7),dp(12),dp(7));render();}};
  final Runnable eventReset=()->{notificationActive=false;render();};
  public int onStartCommand(Intent i,int f,int id){if(i!=null&&i.getBooleanExtra("demo",false))demo();return START_STICKY;}
  void demo(){showEvent("התראה לדוגמה","זה עובד ✦");}
