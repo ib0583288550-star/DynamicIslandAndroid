@@ -9,6 +9,7 @@ import android.os.*;
 import android.provider.Settings;
 import android.view.*;
 import android.widget.*;
+import android.content.ComponentName;
 import android.text.TextUtils;
 
 public class MainActivity extends Activity {
@@ -25,7 +26,8 @@ public class MainActivity extends Activity {
   TextView p=tv("          ●  אי דינמי          ",19);p.setGravity(17);p.setBackground(bg(Color.BLACK,60));LinearLayout.LayoutParams pp=new LinearLayout.LayoutParams(-1,dp(68));pp.setMargins(0,dp(20),0,dp(16));r.addView(p,pp);
 
   Button start=new Button(this);start.setText("🚀  הפעל אי דינמי");start.setTextColor(Color.WHITE);start.setBackground(bg(Color.rgb(104,55,190),34));r.addView(start,new LinearLayout.LayoutParams(-1,dp(58)));
-  Button stop=new Button(this);stop.setText("⛔  כיבוי מלא של האי הדינמי");stop.setTextColor(Color.WHITE);stop.setBackground(bg(Color.rgb(55,20,25),34));LinearLayout.LayoutParams stp=new LinearLayout.LayoutParams(-1,dp(58));stp.setMargins(0,dp(10),0,0);r.addView(stop,stp);\n  Button notifAccess=new Button(this);notifAccess.setText("🔔  הפעל גישה להתראות");notifAccess.setTextColor(Color.WHITE);notifAccess.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams nap=new LinearLayout.LayoutParams(-1,dp(54));nap.setMargins(0,dp(10),0,0);r.addView(notifAccess,nap);
+  Button stop=new Button(this);stop.setText("⛔  כיבוי מלא של האי הדינמי");stop.setTextColor(Color.WHITE);stop.setBackground(bg(Color.rgb(55,20,25),34));LinearLayout.LayoutParams stp=new LinearLayout.LayoutParams(-1,dp(58));stp.setMargins(0,dp(10),0,0);r.addView(stop,stp);
+  Button notifAccess=new Button(this);notifAccess.setText("🔔  הפעל גישה להתראות");notifAccess.setTextColor(Color.WHITE);notifAccess.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams nap=new LinearLayout.LayoutParams(-1,dp(54));nap.setMargins(0,dp(10),0,0);r.addView(notifAccess,nap);
   Button demo=new Button(this);demo.setText("✨  הדגמת אנימציה צבעונית");demo.setTextColor(Color.WHITE);demo.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams d=new LinearLayout.LayoutParams(-1,dp(54));d.setMargins(0,dp(12),0,0);r.addView(demo,d);
 
   Button size=new Button(this);size.setText("📐  גודל וגובה האי");size.setTextColor(Color.WHITE);size.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(54));sp.setMargins(0,dp(12),0,0);r.addView(size,sp);
@@ -36,13 +38,18 @@ public class MainActivity extends Activity {
   onlyIsland.setChecked(pref.getBoolean("only_island_notifications",false));r.addView(onlyIsland,new LinearLayout.LayoutParams(-1,dp(58)));
   onlyIsland.setOnCheckedChangeListener((v,checked)->pref.edit().putBoolean("only_island_notifications",checked).apply());
 
-  TextView info=tv("✨ כולל\n• שליטה בגודל וברוחב\n• שליטה בגובה האי\n• זמן תצוגת התראה לבחירה\n• אפשרות לקרוא התראות דרך האי בלבד",16);info.setTextColor(Color.rgb(220,215,235));r.addView(info);
+  TextView info=tv("✨ כולל
+• שליטה בגודל וברוחב
+• שליטה בגובה האי
+• זמן תצוגת התראה לבחירה
+• אפשרות לקרוא התראות דרך האי בלבד",16);info.setTextColor(Color.rgb(220,215,235));r.addView(info);
 
   scroll.addView(r);
   setContentView(scroll);
 
-  start.setOnClickListener(v->{if(!Settings.canDrawOverlays(this)){startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));return;} try{String enabled=Settings.Secure.getString(getContentResolver(),"enabled_notification_listeners");if(enabled==null||!enabled.contains(getPackageName())){startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));return;}}catch(Exception ignored){startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));return;} pref.edit().putBoolean("auto_start",true).apply(); startService(new Intent(this,IslandService.class));});
-  notifAccess.setOnClickListener(v->startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")));\n  stop.setOnClickListener(v->{pref.edit().putBoolean("auto_start",false).apply();try{stopService(new Intent(this,IslandService.class));}catch(Exception ignored){} Toast.makeText(this,"האי הדינמי כבוי לגמרי",Toast.LENGTH_SHORT).show();});
+  start.setOnClickListener(v->{if(!Settings.canDrawOverlays(this)){startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));return;} if(!hasNotificationAccess()){startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));return;} pref.edit().putBoolean("auto_start",true).apply(); startService(new Intent(this,IslandService.class));});
+  notifAccess.setOnClickListener(v->startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")));
+  stop.setOnClickListener(v->{pref.edit().putBoolean("auto_start",false).apply();try{stopService(new Intent(this,IslandService.class));}catch(Exception ignored){} Toast.makeText(this,"האי הדינמי כבוי לגמרי",Toast.LENGTH_SHORT).show();});
   demo.setOnClickListener(v->{if(!Settings.canDrawOverlays(this))startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));else startService(new Intent(this,IslandService.class).putExtra("demo",true));});
   size.setOnClickListener(v->showSizeDialog(pref));
   timeout.setOnClickListener(v->showTimeoutDialog(pref));
@@ -50,6 +57,8 @@ public class MainActivity extends Activity {
 
   Button autoClose=new Button(this);autoClose.setText("⏱️  זמן סגירה אוטומטית לאחר פתיחה");autoClose.setTextColor(Color.WHITE);autoClose.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams acp=new LinearLayout.LayoutParams(-1,dp(54));acp.setMargins(0,dp(12),0,0);r.addView(autoClose,acp);autoClose.setOnClickListener(v->showAutoCloseDialog(pref));
  }
+
+ boolean hasNotificationAccess(){try{String enabled=Settings.Secure.getString(getContentResolver(),"enabled_notification_listeners");if(enabled==null)return false;for(String s:enabled.split(":")){ComponentName c=ComponentName.unflattenFromString(s);if(c!=null&&getPackageName().equals(c.getPackageName()))return true;} }catch(Exception ignored){}return false;}
 
  void showSizeDialog(SharedPreferences pref){
   LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);box.setPadding(dp(8),0,dp(8),0);
