@@ -44,7 +44,7 @@ public class MainActivity extends Activity {
   setContentView(scroll);
 
   start.setOnClickListener(v->{if(!Settings.canDrawOverlays(this)){startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));return;} if(!hasNotificationAccess()){startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));return;} pref.edit().putBoolean("auto_start",true).apply(); startService(new Intent(this,IslandService.class));});
-  notifAccess.setOnClickListener(v->startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")));
+  notifAccess.setOnClickListener(v->startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)));
   stop.setOnClickListener(v->{pref.edit().putBoolean("auto_start",false).apply();try{stopService(new Intent(this,IslandService.class));}catch(Exception ignored){} Toast.makeText(this,"האי הדינמי כבוי לגמרי",Toast.LENGTH_SHORT).show();});
   demo.setOnClickListener(v->{if(!Settings.canDrawOverlays(this))startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));else startService(new Intent(this,IslandService.class).putExtra("demo",true));});
   size.setOnClickListener(v->showSizeDialog(pref));
@@ -72,13 +72,14 @@ public class MainActivity extends Activity {
  SeekBar.OnSeekBarChangeListener simple(Runnable r){return new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean f){r.run();}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}};}
 
  void showRoundnessDialog(SharedPreferences pref){
-  String[] items={"מלבן","קצת מעוגל","עגול מאוד","כמעט עיגול","עיגול מלא"};
-  int[] vals={0,25,50,75,100};
-  int cur=pref.getInt("corner_percent",100),checked=4;
-  for(int i=0;i<vals.length;i++)if(vals[i]==cur)checked=i;
-  new AlertDialog.Builder(this).setTitle("צורת האי — מלבן ↔ עיגול").setSingleChoiceItems(items,checked,(d,which)->{
-   pref.edit().putInt("corner_percent",vals[which]).apply();IslandService.applySettings();d.dismiss();
-  }).setNegativeButton("ביטול",null).show();
+  LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);box.setPadding(dp(10),0,dp(10),0);
+  TextView value=tv("",16);value.setGravity(Gravity.CENTER);box.addView(value);
+  SeekBar bar=new SeekBar(this);bar.setMax(100);bar.setProgress(Math.max(0,Math.min(100,pref.getInt("corner_percent",100))));box.addView(bar,new LinearLayout.LayoutParams(-1,dp(54)));
+  LinearLayout labels=new LinearLayout(this);labels.setGravity(Gravity.CENTER);
+  TextView left=tv("מלבן",13);TextView right=tv("עיגול",13);labels.addView(left,new LinearLayout.LayoutParams(0,dp(36),1));right.setGravity(Gravity.RIGHT);labels.addView(right,new LinearLayout.LayoutParams(0,dp(36),1));box.addView(labels);
+  Runnable update=()->{int v=bar.getProgress();value.setText("עיגוליות: "+v+"%");pref.edit().putInt("corner_percent",v).apply();IslandService.applySettings();};
+  bar.setOnSeekBarChangeListener(simple(update));update.run();
+  new AlertDialog.Builder(this).setTitle("צורת האי — מלבן ↔ עיגול").setView(box).setPositiveButton("סיום",null).setNegativeButton("ביטול",null).show();
  }
 
  void showAutoCloseDialog(SharedPreferences pref){
