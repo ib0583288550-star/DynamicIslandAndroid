@@ -36,13 +36,9 @@ public class MainActivity extends Activity {
   onlyIsland.setChecked(pref.getBoolean("only_island_notifications",false));r.addView(onlyIsland,new LinearLayout.LayoutParams(-1,dp(58)));
   onlyIsland.setOnCheckedChangeListener((v,checked)->pref.edit().putBoolean("only_island_notifications",checked).apply());
 
-  TextView info=tv("
-✨ כולל
-• שליטה בגודל וברוחב
-• שליטה בגובה האי
-• זמן תצוגת התראה לבחירה
-• אפשרות לקרוא התראות דרך האי בלבד",16);info.setTextColor(Color.rgb(220,215,235));r.addView(info);
-  setContentView(r);
+  TextView info=tv("✨ כולל\n• שליטה בגודל וברוחב\n• שליטה בגובה האי\n• זמן תצוגת התראה לבחירה\n• אפשרות לקרוא התראות דרך האי בלבד",16);info.setTextColor(Color.rgb(220,215,235));r.addView(info);
+  scroll.addView(r);
+  setContentView(scroll);
 
   start.setOnClickListener(v->{if(!Settings.canDrawOverlays(this)){startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));return;} startService(new Intent(this,IslandService.class));});
   notifAccess.setOnClickListener(v->startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")));
