@@ -30,7 +30,7 @@ public class IslandNotificationListener extends NotificationListenerService {
    MediaController chosen=(sessions!=null&&!sessions.isEmpty())?sessions.get(0):null;
    pendingController=chosen;
    IslandService.setMediaController(chosen);
-   if(!pendingTitle.isEmpty()) IslandService.event(pendingTitle,pendingDetail);
+   if(!pendingTitle.isEmpty()) IslandService.event(pendingTitle,pendingDetail);\n   postLatestNotification();
   }catch(Exception ignored){}
  }
 
@@ -48,7 +48,7 @@ public class IslandNotificationListener extends NotificationListenerService {
   Bundle e=n.extras;
   if(e==null)return;
   CharSequence title=e.getCharSequence(Notification.EXTRA_TITLE);
-  CharSequence text=e.getCharSequence(Notification.EXTRA_TEXT);
+  CharSequence text=e.getCharSequence(Notification.EXTRA_TEXT);\n  if(text==null) text=e.getCharSequence(Notification.EXTRA_BIG_TEXT);
   if(title==null&&text==null)return;
   pendingTitle=title==null?"התראה":title.toString();
   pendingDetail=text==null?"":text.toString();
