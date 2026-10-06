@@ -15,6 +15,11 @@ import android.view.animation.*;
 import android.widget.*;
 
 public class IslandService extends Service {
+ MediaController mediaController;
+ boolean mediaActive=false, mediaPlaying=false;
+ String mediaTitle="";
+ boolean notificationActive=false;
+ String notificationTitle="", notificationDetail="";
  WindowManager wm; LinearLayout pill,topRow,controls; TextView icon,label,sub; Handler h=new Handler(Looper.getMainLooper());
  boolean expanded=false; public static IslandService current;
  String mediaTitle="אין מדיה"; boolean mediaPlaying=false; long timerEnd=0; String timerLabel="";
