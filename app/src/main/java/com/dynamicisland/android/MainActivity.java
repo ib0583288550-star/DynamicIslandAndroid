@@ -9,6 +9,7 @@ import android.os.*;
 import android.provider.Settings;
 import android.view.*;
 import android.widget.*;
+import android.text.TextUtils;
 
 public class MainActivity extends Activity {
  int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
@@ -17,12 +18,12 @@ public class MainActivity extends Activity {
 
  public void onCreate(Bundle b){
   super.onCreate(b);
-  LinearLayout r=new LinearLayout(this);r.setOrientation(LinearLayout.VERTICAL);r.setPadding(dp(18),dp(22),dp(18),dp(24));r.setBackgroundColor(Color.rgb(7,7,12));
+  ScrollView scroll=new ScrollView(this); scroll.setFillViewport(true);\n  LinearLayout r=new LinearLayout(this);r.setOrientation(LinearLayout.VERTICAL);r.setPadding(dp(18),dp(22),dp(18),dp(24));r.setBackgroundColor(Color.rgb(7,7,12));
   TextView title=tv("אי דינמי ✦",30);title.setTypeface(null,1);r.addView(title);
   TextView sub=tv("רק מה שחשוב: התראה אחרונה, או מוזיקה כשיש מוזיקה.",15);sub.setTextColor(Color.LTGRAY);r.addView(sub);
   TextView p=tv("          ●  אי דינמי          ",19);p.setGravity(17);p.setBackground(bg(Color.BLACK,60));LinearLayout.LayoutParams pp=new LinearLayout.LayoutParams(-1,dp(68));pp.setMargins(0,dp(20),0,dp(16));r.addView(p,pp);
 
-  Button start=new Button(this);start.setText("🚀  הפעל אי דינמי");start.setTextColor(Color.WHITE);start.setBackground(bg(Color.rgb(104,55,190),34));r.addView(start,new LinearLayout.LayoutParams(-1,dp(58)));
+  Button start=new Button(this);start.setText("🚀  הפעל אי דינמי");start.setTextColor(Color.WHITE);start.setBackground(bg(Color.rgb(104,55,190),34));r.addView(start,new LinearLayout.LayoutParams(-1,dp(58)));\n  Button notifAccess=new Button(this);notifAccess.setText("🔔  הפעל גישה להתראות");notifAccess.setTextColor(Color.WHITE);notifAccess.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams nap=new LinearLayout.LayoutParams(-1,dp(54));nap.setMargins(0,dp(10),0,0);r.addView(notifAccess,nap);
   Button demo=new Button(this);demo.setText("✨  הדגמת אנימציה צבעונית");demo.setTextColor(Color.WHITE);demo.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams d=new LinearLayout.LayoutParams(-1,dp(54));d.setMargins(0,dp(12),0,0);r.addView(demo,d);
 
   Button size=new Button(this);size.setText("📐  גודל וגובה האי");size.setTextColor(Color.WHITE);size.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(54));sp.setMargins(0,dp(12),0,0);r.addView(size,sp);
@@ -36,7 +37,7 @@ public class MainActivity extends Activity {
   TextView info=tv("\n✨ כולל\n• שליטה בגודל וברוחב\n• שליטה בגובה האי\n• זמן תצוגת התראה לבחירה\n• אפשרות לקרוא התראות דרך האי בלבד",16);info.setTextColor(Color.rgb(220,215,235));r.addView(info);
   setContentView(r);
 
-  start.setOnClickListener(v->{if(!Settings.canDrawOverlays(this))startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));else startService(new Intent(this,IslandService.class));});
+  start.setOnClickListener(v->{if(!Settings.canDrawOverlays(this)){startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));return;} startService(new Intent(this,IslandService.class));});\n  notifAccess.setOnClickListener(v->startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")));
   demo.setOnClickListener(v->{if(!Settings.canDrawOverlays(this))startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));else startService(new Intent(this,IslandService.class).putExtra("demo",true));});
   size.setOnClickListener(v->showSizeDialog(pref));
   timeout.setOnClickListener(v->showTimeoutDialog(pref));
@@ -49,9 +50,9 @@ public class MainActivity extends Activity {
   TextView h=tv("גובה האי",16);box.addView(h);
   SeekBar height=new SeekBar(this);height.setMax(50);height.setProgress(pref.getInt("height_dp",42)-30);box.addView(height);
   TextView y=tv("מרחק מלמעלה",16);box.addView(y);
-  SeekBar top=new SeekBar(this);top.setMax(40);top.setProgress(pref.getInt("top_dp",6));box.addView(top);
+  SeekBar top=new SeekBar(this);top.setMax(120);top.setProgress(Math.max(0,Math.min(120,pref.getInt("top_dp",6))));box.addView(top);
   TextView values=tv("",14);box.addView(values);
-  Runnable update=()->values.setText("רוחב: "+(180+width.getProgress())+"dp   •   גובה: "+(30+height.getProgress())+"dp   •   מרחק מלמעלה: "+top.getProgress()+"dp");
+  Runnable update=()->{int ww=120+width.getProgress(),hh=24+height.getProgress(),yy=top.getProgress();values.setText("רוחב: "+ww+"dp   •   גובה: "+hh+"dp   •   מרחק מלמעלה: "+yy+"dp"); pref.edit().putInt("width_dp",ww).putInt("height_dp",hh).putInt("top_dp",yy).apply(); IslandService.applySettings();};
   width.setOnSeekBarChangeListener(simple(update));height.setOnSeekBarChangeListener(simple(update));top.setOnSeekBarChangeListener(simple(update));update.run();
   new AlertDialog.Builder(this).setTitle("התאמת האי").setView(box).setPositiveButton("שמור",(d,wv)->{
    pref.edit().putInt("width_dp",180+width.getProgress()).putInt("height_dp",30+height.getProgress()).putInt("top_dp",top.getProgress()).apply();
