@@ -48,6 +48,7 @@ public class MainActivity extends Activity {
   stop.setOnClickListener(v->{pref.edit().putBoolean("auto_start",false).apply();try{stopService(new Intent(this,IslandService.class));}catch(Exception ignored){} Toast.makeText(this,"האי הדינמי כבוי לגמרי",Toast.LENGTH_SHORT).show();});
   demo.setOnClickListener(v->{if(!Settings.canDrawOverlays(this))startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));else startService(new Intent(this,IslandService.class).putExtra("demo",true));});
   size.setOnClickListener(v->showSizeDialog(pref));
+  roundness.setOnClickListener(v->showRoundnessDialog(pref));
   timeout.setOnClickListener(v->showTimeoutDialog(pref));
   Switch voiceAssistant=new Switch(this);voiceAssistant.setText("🎙️  להציג כפתור עוזר קולי");voiceAssistant.setTextColor(Color.WHITE);voiceAssistant.setTextSize(15);voiceAssistant.setPadding(dp(8),dp(10),dp(8),dp(10));voiceAssistant.setChecked(pref.getBoolean("voice_assistant_button",true));r.addView(voiceAssistant,new LinearLayout.LayoutParams(-1,dp(58)));voiceAssistant.setOnCheckedChangeListener((v,checked)->{pref.edit().putBoolean("voice_assistant_button",checked).apply();IslandService.applySettings();});
 
