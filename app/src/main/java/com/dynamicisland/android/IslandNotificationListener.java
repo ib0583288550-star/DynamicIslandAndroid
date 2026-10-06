@@ -2,7 +2,7 @@ package com.dynamicisland.android;
 
 import android.app.Notification;
 import android.content.ComponentName;
-import android.media.MediaController;
+import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
