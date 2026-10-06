@@ -20,6 +20,8 @@ public class IslandService extends Service {
     long demoUntil=0;
     String mediaTitle="אין מדיה";
     boolean mediaPlaying=false;
+    long timerEnd=0;
+    String timerLabel="";
     int battery=100;
     boolean charging=false;
 
@@ -119,6 +121,32 @@ public class IslandService extends Service {
             h.postDelayed(()->{demoUntil=0;refresh();},2600);
         }
     }
+
+    void startTimer(long seconds,String title){
+        timerEnd=System.currentTimeMillis()+seconds*1000L;
+        timerLabel=title==null?"טיימר":title;
+        h.post(timerTick);
+    }
+    final Runnable timerTick=new Runnable(){
+        public void run(){
+            if(pill==null)return;
+            long left=Math.max(0,timerEnd-System.currentTimeMillis());
+            if(left>0){
+                long sec=(left+999)/1000;
+                icon.setText("⏱");
+                icon.setTextColor(Color.rgb(255,190,70));
+                label.setText(timerLabel);
+                sub.setText(String.format(java.util.Locale.US,"%02d:%02d",sec/60,sec%60));
+                h.postDelayed(this,500);
+            }else if(timerEnd>0){
+                timerEnd=0;
+                icon.setText("✓");
+                label.setText("הטיימר הסתיים");
+                sub.setText("עכשיו");
+                h.postDelayed(()->refresh(),2200);
+            }
+        }
+    };
 
     void refresh(){
         if(pill==null)return;
