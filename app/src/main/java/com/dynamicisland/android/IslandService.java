@@ -46,7 +46,7 @@ public class IslandService extends Service {
   label=new TextView(this);label.setTextColor(Color.WHITE);label.setTextSize(14);label.setTypeface(null,1);label.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);label.setSingleLine(true);label.setEllipsize(android.text.TextUtils.TruncateAt.MARQUEE);label.setMarqueeRepeatLimit(1);
   sub=new TextView(this);sub.setTextColor(Color.LTGRAY);sub.setTextSize(11);sub.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);sub.setSingleLine(true);sub.setEllipsize(android.text.TextUtils.TruncateAt.END);
   switchButton=new ImageButton(this);switchButton.setImageResource(android.R.drawable.ic_dialog_email);switchButton.setColorFilter(Color.WHITE);switchButton.setBackground(bg(Color.rgb(20,20,20),18));switchButton.setContentDescription("מעבר בין נגן להתראות");
-  switchButton.setOnClickListener(v->{if(mediaActive && notificationActive){showingPlayer=!showingPlayer;render();}else if(notificationActive && !showingPlayer){showingPlayer=false;render();}else if(mediaActive){showingPlayer=true;render();}});
+  switchButton.setOnClickListener(v->{if(mediaActive && notificationActive){showingPlayer=!showingPlayer;render();}else if(notificationActive){showingPlayer=false;render();}else if(mediaActive){showingPlayer=true;render();}});
   timeText=new TextView(this);timeText.setTextColor(Color.LTGRAY);timeText.setTextSize(10);timeText.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);timeText.setSingleLine(true);
   topRow.addView(artwork,new LinearLayout.LayoutParams(dp(34),dp(34)));
   topRow.addView(icon,new LinearLayout.LayoutParams(dp(22),-1));
