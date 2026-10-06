@@ -3,11 +3,27 @@ plugins { id 'com.android.application' }
 android {
     namespace 'com.dynamicisland.android'
     compileSdk 35
+
     defaultConfig {
         applicationId 'com.dynamicisland.android'
         minSdk 26
         targetSdk 35
-        versionCode 4
-        versionName '1.3'
+        versionCode 5
+        versionName '1.4'
+    }
+
+    // Temporary test signing so the Release APK can be installed immediately.
+    // The final Play release will use a dedicated release/upload key.
+    signingConfigs {
+        release {
+            initWith signingConfigs.debug
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+        }
     }
 }
