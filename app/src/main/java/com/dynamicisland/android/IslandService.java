@@ -19,6 +19,7 @@ public class IslandService extends Service {
  boolean mediaActive=false, mediaPlaying=false;
  boolean notificationActive=false;
  String notificationTitle="", notificationDetail="";
+ String mediaTitle="מוזיקה";
  WindowManager wm; LinearLayout pill,topRow,controls; TextView icon,label,sub; Handler h=new Handler(Looper.getMainLooper());
  boolean expanded=false; public static IslandService current;
  long timerEnd=0; String timerLabel="";
@@ -33,7 +34,7 @@ public class IslandService extends Service {
  public static void applySettings(){if(current!=null){current.loadSettings();current.applyLayout();current.render();}}
  void applyLayout(){if(pill==null||wm==null)return;WindowManager.LayoutParams p=(WindowManager.LayoutParams)pill.getLayoutParams();p.width=dp(expanded?Math.max(widthDp,300):widthDp);p.height=dp(expanded?132:heightDp);p.y=dp(topDp);try{wm.updateViewLayout(pill,p);}catch(Exception ignored){}}
 
- final BroadcastReceiver batteryReceiver=new BroadcastReceiver(){public void onReceive(Context c,Intent i){int level=i.getIntExtra("level",100),scale=i.getIntExtra("scale",100);battery=scale>0?(level*100/scale):100;int status=i.getIntExtra("status",-1);charging=status==BatteryManager.BATTERY_STATUS_CHARGING||status==BatteryManager.BATTERY_STATUS_FULL;refresh();}};
+ 
  Notification notifyMe(){String c="island";NotificationManager n=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);if(Build.VERSION.SDK_INT>=26)n.createNotificationChannel(new NotificationChannel(c,"Dynamic Island",NotificationManager.IMPORTANCE_LOW));return new Notification.Builder(this,c).setContentTitle("אי דינמי פעיל").setContentText("האי הדינמי פועל").setSmallIcon(android.R.drawable.ic_dialog_info).setOngoing(true).build();}
 
  void show(){if(!Settings.canDrawOverlays(this))return;wm=(WindowManager)getSystemService(WINDOW_SERVICE);
