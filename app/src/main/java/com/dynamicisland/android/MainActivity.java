@@ -37,10 +37,11 @@ public class MainActivity extends Activity {
   onlyIsland.setOnCheckedChangeListener((v,checked)->pref.edit().putBoolean("only_island_notifications",checked).apply());
 
   TextView info=tv("✨ כולל\n• שליטה בגודל וברוחב\n• שליטה בגובה האי\n• זמן תצוגת התראה לבחירה\n• אפשרות לקרוא התראות דרך האי בלבד",16);info.setTextColor(Color.rgb(220,215,235));r.addView(info);
+
   scroll.addView(r);
   setContentView(scroll);
 
-  start.setOnClickListener(v->{if(!Settings.canDrawOverlays(this)){startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));return;} try{if(!Settings.Secure.getString(getContentResolver(),"enabled_notification_listeners").contains(getPackageName())){startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));return;}}catch(Exception ignored){} pref.edit().putBoolean("auto_start",true).apply(); startService(new Intent(this,IslandService.class));});
+  start.setOnClickListener(v->{if(!Settings.canDrawOverlays(this)){startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));return;} try{String enabled=Settings.Secure.getString(getContentResolver(),"enabled_notification_listeners");if(enabled==null||!enabled.contains(getPackageName())){startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));return;}}catch(Exception ignored){startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));return;} pref.edit().putBoolean("auto_start",true).apply(); startService(new Intent(this,IslandService.class));});
   notifAccess.setOnClickListener(v->startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")));\n  stop.setOnClickListener(v->{pref.edit().putBoolean("auto_start",false).apply();try{stopService(new Intent(this,IslandService.class));}catch(Exception ignored){} Toast.makeText(this,"האי הדינמי כבוי לגמרי",Toast.LENGTH_SHORT).show();});
   demo.setOnClickListener(v->{if(!Settings.canDrawOverlays(this))startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));else startService(new Intent(this,IslandService.class).putExtra("demo",true));});
   size.setOnClickListener(v->showSizeDialog(pref));
