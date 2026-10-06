@@ -28,13 +28,12 @@ public class IslandService extends Service {
  int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
  GradientDrawable bg(int c,float r){GradientDrawable x=new GradientDrawable();x.setColor(c);x.setCornerRadius(dp(r));x.setStroke(dp(1),Color.argb(55,255,255,255));return x;}
 
- @Override public void onCreate(){super.onCreate();current=this;loadSettings();startForeground(7,notifyMe());show();}
+ @Override public void onCreate(){super.onCreate();current=this;loadSettings();startForeground(7,notifyMe());show();if(IslandNotificationListener.pendingController!=null)setController(IslandNotificationListener.pendingController);if(!IslandNotificationListener.pendingTitle.isEmpty())showEvent(IslandNotificationListener.pendingTitle,IslandNotificationListener.pendingDetail);}
 
  void loadSettings(){SharedPreferences p=getSharedPreferences("island_settings",MODE_PRIVATE);widthDp=p.getInt("width_dp",218);heightDp=p.getInt("height_dp",42);topDp=p.getInt("top_dp",6);eventTimeout=p.getInt("notification_timeout_ms",3200);}
  public static void applySettings(){if(current!=null){current.loadSettings();current.applyLayout();current.render();}}
  void applyLayout(){if(pill==null||wm==null)return;WindowManager.LayoutParams p=(WindowManager.LayoutParams)pill.getLayoutParams();p.width=dp(expanded?Math.max(widthDp,300):widthDp);p.height=dp(expanded?132:heightDp);p.y=dp(topDp);try{wm.updateViewLayout(pill,p);}catch(Exception ignored){}}
 
- 
  Notification notifyMe(){String c="island";NotificationManager n=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);if(Build.VERSION.SDK_INT>=26)n.createNotificationChannel(new NotificationChannel(c,"Dynamic Island",NotificationManager.IMPORTANCE_LOW));return new Notification.Builder(this,c).setContentTitle("אי דינמי פעיל").setContentText("האי הדינמי פועל").setSmallIcon(android.R.drawable.ic_dialog_info).setOngoing(true).build();}
 
  void show(){if(!Settings.canDrawOverlays(this))return;wm=(WindowManager)getSystemService(WINDOW_SERVICE);
@@ -57,8 +56,7 @@ public class IslandService extends Service {
  void sendMedia(long action){if(mediaController==null)return;try{if(action==PlaybackState.ACTION_SKIP_TO_PREVIOUS)mediaController.getTransportControls().skipToPrevious();else mediaController.getTransportControls().skipToNext();}catch(Exception ignored){}h.postDelayed(()->{readMedia();render();},180);}
  void updateMedia(String title,boolean playing){mediaTitle=title==null||title.isEmpty()?"מוזיקה":title;mediaPlaying=playing;mediaActive=true;render();}
  void render(){if(pill==null)return;
-  if(expanded){pill.setBackground(bg(Color.rgb(25,18,38),30));controls.setVisibility(mediaActive?View.VISIBLE:View.GONE);}
-  else {pill.setBackground(bg(Color.BLACK,50));controls.setVisibility(View.GONE);}
+  if(expanded){pill.setBackground(bg(Color.rgb(25,18,38),30));controls.setVisibility(mediaActive?View.VISIBLE:View.GONE);}else{pill.setBackground(bg(Color.BLACK,50));controls.setVisibility(View.GONE);}
   if(notificationActive){icon.setText("●");icon.setTextColor(Color.rgb(90,210,255));label.setText(notificationTitle);sub.setText(notificationDetail);}
   else if(mediaActive){icon.setText(mediaPlaying?"▶":"Ⅱ");icon.setTextColor(Color.rgb(255,90,180));label.setText(mediaTitle);sub.setText(mediaPlaying?"מנגן":"מושהה");}
   else {icon.setText("");label.setText("");sub.setText("");}
@@ -69,8 +67,8 @@ public class IslandService extends Service {
  void showEvent(String title,String detail){if(pill==null)return;notificationTitle=title==null?"התראה":title;notificationDetail=detail==null?"":detail;notificationActive=true;render();h.removeCallbacks(eventReset);if(eventTimeout>0)h.postDelayed(eventReset,eventTimeout);}
  final Runnable eventReset=()->{notificationActive=false;render();};
  public int onStartCommand(Intent i,int f,int id){if(i!=null&&i.getBooleanExtra("demo",false))demo();return START_STICKY;}
- void demo(){showEvent("התראה לדוגמה","זה עובד ✦");h.postDelayed(()->{notificationActive=false;render();},1800);}
- public static void event(String title,String detail){if(current!=null)current.showEvent(title,detail);}
+ void demo(){showEvent("התראה לדוגמה","זה עובד ✦");}
+ public static void event(String title,String detail){if(current!=null)current.showEvent(title,detail);else{IslandNotificationListener.pendingTitle=title==null?"התראה":title;IslandNotificationListener.pendingDetail=detail==null?"":detail;}}
  public void onDestroy(){current=null;if(pill!=null&&wm!=null)try{wm.removeView(pill);}catch(Exception ignored){}super.onDestroy();}
  public IBinder onBind(Intent i){return null;}
 }
