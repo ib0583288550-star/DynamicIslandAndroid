@@ -35,6 +35,28 @@ public class IslandNotificationListener extends NotificationListenerService {
   }catch(Exception ignored){}
  }
 
+ void postLatestNotification(){
+  try{
+   StatusBarNotification[] all=getActiveNotifications();
+   if(all==null)return;
+   for(int i=all.length-1;i>=0;i--){
+    StatusBarNotification sbn=all[i];
+    if(getPackageName().equals(sbn.getPackageName()))continue;
+    Notification n=sbn.getNotification();
+    if(n==null||n.extras==null)continue;
+    Bundle e=n.extras;
+    CharSequence title=e.getCharSequence(Notification.EXTRA_TITLE);
+    CharSequence text=e.getCharSequence(Notification.EXTRA_TEXT);
+    if(text==null)text=e.getCharSequence(Notification.EXTRA_BIG_TEXT);
+    if(title==null&&text==null)continue;
+    pendingTitle=title==null?"התראה":title.toString();
+    pendingDetail=text==null?"":text.toString();
+    IslandService.event(pendingTitle,pendingDetail);
+    break;
+   }
+  }catch(Exception ignored){}
+ }
+
  @Override public void onListenerDisconnected(){
   try{if(mediaManager!=null&&mediaListener!=null)mediaManager.removeOnActiveSessionsChangedListener(mediaListener);}catch(Exception ignored){}
   pendingController=null;
@@ -50,7 +72,7 @@ public class IslandNotificationListener extends NotificationListenerService {
   if(e==null)return;
   CharSequence title=e.getCharSequence(Notification.EXTRA_TITLE);
   CharSequence text=e.getCharSequence(Notification.EXTRA_TEXT);
-  if(text==null) text=e.getCharSequence(Notification.EXTRA_BIG_TEXT);
+  if(text==null)text=e.getCharSequence(Notification.EXTRA_BIG_TEXT);
   if(title==null&&text==null)return;
   pendingTitle=title==null?"התראה":title.toString();
   pendingDetail=text==null?"":text.toString();
