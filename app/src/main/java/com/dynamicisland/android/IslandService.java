@@ -5,7 +5,7 @@ import android.animation.*;
 import android.content.*;
 import android.graphics.*;
 import android.graphics.drawable.GradientDrawable;
-import android.media.MediaController;
+import android.media.session.MediaController;
 import android.media.MediaMetadata;
 import android.media.session.PlaybackState;
 import android.os.*;
@@ -17,12 +17,11 @@ import android.widget.*;
 public class IslandService extends Service {
  MediaController mediaController;
  boolean mediaActive=false, mediaPlaying=false;
- String mediaTitle="";
  boolean notificationActive=false;
  String notificationTitle="", notificationDetail="";
  WindowManager wm; LinearLayout pill,topRow,controls; TextView icon,label,sub; Handler h=new Handler(Looper.getMainLooper());
  boolean expanded=false; public static IslandService current;
- String mediaTitle="אין מדיה"; boolean mediaPlaying=false; long timerEnd=0; String timerLabel="";
+ long timerEnd=0; String timerLabel="";
  int battery=100; boolean charging=false; int widthDp=218,heightDp=42,topDp=6; int eventTimeout=3200;
 
  int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
