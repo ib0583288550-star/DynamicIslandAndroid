@@ -18,6 +18,8 @@ public class IslandService extends Service {
     boolean expanded=false;
     public static IslandService current;
     long demoUntil=0;
+    String mediaTitle="אין מדיה";
+    boolean mediaPlaying=false;
     int battery=100;
     boolean charging=false;
 
@@ -103,6 +105,19 @@ public class IslandService extends Service {
         p.y=dp(6);
         wm.addView(pill,p);
         refresh();
+    }
+
+    void updateMedia(String title, boolean playing){
+        mediaTitle=title==null||title.isEmpty()?"מדיה":title;
+        mediaPlaying=playing;
+        if(pill!=null){
+            demoUntil=System.currentTimeMillis()+2600;
+            icon.setText(playing?"▶":"Ⅱ");
+            icon.setTextColor(Color.rgb(255,90,180));
+            label.setText(mediaTitle);
+            sub.setText(playing?"מנגן":"מושהה");
+            h.postDelayed(()->{demoUntil=0;refresh();},2600);
+        }
     }
 
     void refresh(){
