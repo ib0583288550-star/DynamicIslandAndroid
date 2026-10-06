@@ -25,7 +25,7 @@ public class MainActivity extends Activity {
   TextView p=tv("          ●  אי דינמי          ",19);p.setGravity(17);p.setBackground(bg(Color.BLACK,60));LinearLayout.LayoutParams pp=new LinearLayout.LayoutParams(-1,dp(68));pp.setMargins(0,dp(20),0,dp(16));r.addView(p,pp);
 
   Button start=new Button(this);start.setText("🚀  הפעל אי דינמי");start.setTextColor(Color.WHITE);start.setBackground(bg(Color.rgb(104,55,190),34));r.addView(start,new LinearLayout.LayoutParams(-1,dp(58)));
-  Button notifAccess=new Button(this);notifAccess.setText("🔔  הפעל גישה להתראות");notifAccess.setTextColor(Color.WHITE);notifAccess.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams nap=new LinearLayout.LayoutParams(-1,dp(54));nap.setMargins(0,dp(10),0,0);r.addView(notifAccess,nap);
+  Button stop=new Button(this);stop.setText("⛔  כיבוי מלא של האי הדינמי");stop.setTextColor(Color.WHITE);stop.setBackground(bg(Color.rgb(55,20,25),34));LinearLayout.LayoutParams stp=new LinearLayout.LayoutParams(-1,dp(58));stp.setMargins(0,dp(10),0,0);r.addView(stop,stp);\n  Button notifAccess=new Button(this);notifAccess.setText("🔔  הפעל גישה להתראות");notifAccess.setTextColor(Color.WHITE);notifAccess.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams nap=new LinearLayout.LayoutParams(-1,dp(54));nap.setMargins(0,dp(10),0,0);r.addView(notifAccess,nap);
   Button demo=new Button(this);demo.setText("✨  הדגמת אנימציה צבעונית");demo.setTextColor(Color.WHITE);demo.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams d=new LinearLayout.LayoutParams(-1,dp(54));d.setMargins(0,dp(12),0,0);r.addView(demo,d);
 
   Button size=new Button(this);size.setText("📐  גודל וגובה האי");size.setTextColor(Color.WHITE);size.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(54));sp.setMargins(0,dp(12),0,0);r.addView(size,sp);
@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
   setContentView(scroll);
 
   start.setOnClickListener(v->{if(!Settings.canDrawOverlays(this)){startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));return;} try{if(!Settings.Secure.getString(getContentResolver(),"enabled_notification_listeners").contains(getPackageName())){startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));return;}}catch(Exception ignored){} pref.edit().putBoolean("auto_start",true).apply(); startService(new Intent(this,IslandService.class));});
-  notifAccess.setOnClickListener(v->startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")));
+  notifAccess.setOnClickListener(v->startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")));\n  stop.setOnClickListener(v->{pref.edit().putBoolean("auto_start",false).apply();try{stopService(new Intent(this,IslandService.class));}catch(Exception ignored){} android.content.ComponentName cn=new android.content.ComponentName(this,IslandNotificationListener.class);try{requestRebind(cn);}catch(Exception ignored){} Toast.makeText(this,"האי הדינמי כבוי לגמרי",Toast.LENGTH_SHORT).show();});
   demo.setOnClickListener(v->{if(!Settings.canDrawOverlays(this))startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));else startService(new Intent(this,IslandService.class).putExtra("demo",true));});
   size.setOnClickListener(v->showSizeDialog(pref));
   timeout.setOnClickListener(v->showTimeoutDialog(pref));
