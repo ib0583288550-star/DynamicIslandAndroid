@@ -17,10 +17,10 @@ public class MainActivity extends Activity {
 
  public void onCreate(Bundle b){
   super.onCreate(b);
-  LinearLayout r=new LinearLayout(this);r.setOrientation(LinearLayout.VERTICAL);r.setPadding(dp(18),dp(26),dp(18),dp(18));r.setBackgroundColor(Color.rgb(7,7,12));
+  LinearLayout r=new LinearLayout(this);r.setOrientation(LinearLayout.VERTICAL);r.setPadding(dp(18),dp(22),dp(18),dp(24));r.setBackgroundColor(Color.rgb(7,7,12));
   TextView title=tv("אי דינמי ✦",30);title.setTypeface(null,1);r.addView(title);
-  TextView sub=tv("אי דינמי צבעוני וחי — התראות, מדיה, סוללה וטיימרים",15);sub.setTextColor(Color.LTGRAY);r.addView(sub);
-  TextView p=tv("       ●  ✦  אי דינמי  ✦  ●       ",19);p.setGravity(17);p.setBackground(bg(Color.BLACK,60));LinearLayout.LayoutParams pp=new LinearLayout.LayoutParams(-1,dp(68));pp.setMargins(0,dp(20),0,dp(16));r.addView(p,pp);
+  TextView sub=tv("רק מה שחשוב: התראה אחרונה, או מוזיקה כשיש מוזיקה.",15);sub.setTextColor(Color.LTGRAY);r.addView(sub);
+  TextView p=tv("          ●  אי דינמי          ",19);p.setGravity(17);p.setBackground(bg(Color.BLACK,60));LinearLayout.LayoutParams pp=new LinearLayout.LayoutParams(-1,dp(68));pp.setMargins(0,dp(20),0,dp(16));r.addView(p,pp);
 
   Button start=new Button(this);start.setText("🚀  הפעל אי דינמי");start.setTextColor(Color.WHITE);start.setBackground(bg(Color.rgb(104,55,190),34));r.addView(start,new LinearLayout.LayoutParams(-1,dp(58)));
   Button demo=new Button(this);demo.setText("✨  הדגמת אנימציה צבעונית");demo.setTextColor(Color.WHITE);demo.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams d=new LinearLayout.LayoutParams(-1,dp(54));d.setMargins(0,dp(12),0,0);r.addView(demo,d);
@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
   SeekBar width=new SeekBar(this);width.setMax(220);width.setProgress(pref.getInt("width_dp",218)-180);box.addView(width);
   TextView h=tv("גובה האי",16);box.addView(h);
   SeekBar height=new SeekBar(this);height.setMax(50);height.setProgress(pref.getInt("height_dp",42)-30);box.addView(height);
-  TextView y=tv("גובה מהמעלה של המסך",16);box.addView(y);
+  TextView y=tv("מרחק מלמעלה",16);box.addView(y);
   SeekBar top=new SeekBar(this);top.setMax(40);top.setProgress(pref.getInt("top_dp",6));box.addView(top);
   TextView values=tv("",14);box.addView(values);
   Runnable update=()->values.setText("רוחב: "+(180+width.getProgress())+"dp   •   גובה: "+(30+height.getProgress())+"dp   •   מרחק מלמעלה: "+top.getProgress()+"dp");
