@@ -1,6 +1,7 @@
 package com.dynamicisland.android;
 
 import android.app.*;
+import android.animation.*;
 import android.content.*;
 import android.graphics.*;
 import android.graphics.drawable.GradientDrawable;
