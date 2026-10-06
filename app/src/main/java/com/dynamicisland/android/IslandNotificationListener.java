@@ -12,6 +12,8 @@ import java.util.List;
 public class IslandNotificationListener extends NotificationListenerService {
  MediaSessionManager mediaManager;
  MediaSessionManager.OnActiveSessionsChangedListener mediaListener;
+ static MediaController pendingController;
+ static String pendingTitle="", pendingDetail="";
 
  @Override public void onListenerConnected(){
   super.onListenerConnected();
@@ -20,17 +22,21 @@ public class IslandNotificationListener extends NotificationListenerService {
    ComponentName cn=new ComponentName(this,IslandNotificationListener.class);
    mediaListener=sessions->{
     MediaController chosen=(sessions!=null&&!sessions.isEmpty())?sessions.get(0):null;
+    pendingController=chosen;
     IslandService.setMediaController(chosen);
    };
    mediaManager.addOnActiveSessionsChangedListener(mediaListener,cn);
    List<MediaController> sessions=mediaManager.getActiveSessions(cn);
    MediaController chosen=(sessions!=null&&!sessions.isEmpty())?sessions.get(0):null;
+   pendingController=chosen;
    IslandService.setMediaController(chosen);
+   if(!pendingTitle.isEmpty()) IslandService.event(pendingTitle,pendingDetail);
   }catch(Exception ignored){}
  }
 
  @Override public void onListenerDisconnected(){
   try{if(mediaManager!=null&&mediaListener!=null)mediaManager.removeOnActiveSessionsChangedListener(mediaListener);}catch(Exception ignored){}
+  pendingController=null;
   IslandService.setMediaController(null);
   super.onListenerDisconnected();
  }
@@ -39,13 +45,13 @@ public class IslandNotificationListener extends NotificationListenerService {
   Notification n=sbn.getNotification();
   if(n==null)return;
   Bundle e=n.extras;
-  if(e!=null && e.getParcelable(Notification.EXTRA_MEDIA_SESSION)!=null){
-   return;
-  }
+  if(e==null)return;
   CharSequence title=e.getCharSequence(Notification.EXTRA_TITLE);
   CharSequence text=e.getCharSequence(Notification.EXTRA_TEXT);
   if(title==null&&text==null)return;
-  IslandService.event(title==null?"התראה":title.toString(),text==null?"":text.toString());
+  pendingTitle=title==null?"התראה":title.toString();
+  pendingDetail=text==null?"":text.toString();
+  IslandService.event(pendingTitle,pendingDetail);
   if(getSharedPreferences("island_settings",MODE_PRIVATE).getBoolean("only_island_notifications",false)){
    try{cancelNotification(sbn.getKey());}catch(Exception ignored){}
   }
