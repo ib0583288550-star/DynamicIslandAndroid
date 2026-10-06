@@ -31,7 +31,7 @@ public class MainActivity extends Activity {
   Button demo=new Button(this);demo.setText("✨  הדגמת אנימציה צבעונית");demo.setTextColor(Color.WHITE);demo.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams d=new LinearLayout.LayoutParams(-1,dp(54));d.setMargins(0,dp(12),0,0);r.addView(demo,d);
 
   Button size=new Button(this);size.setText("📐  גודל וגובה האי");size.setTextColor(Color.WHITE);size.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(54));sp.setMargins(0,dp(12),0,0);r.addView(size,sp);
-  Button timeout=new Button(this);timeout.setText("⏳  זמן הצגת התראות");timeout.setTextColor(Color.WHITE);timeout.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(-1,dp(54));tp.setMargins(0,dp(12),0,0);r.addView(timeout,tp);
+  Button roundness=new Button(this);roundness.setText("⭕  עיגוליות / מלבן של האי");roundness.setTextColor(Color.WHITE);roundness.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,dp(54));rp.setMargins(0,dp(12),0,0);r.addView(roundness,rp);\n  Button timeout=new Button(this);timeout.setText("⏳  זמן הצגת התראות");timeout.setTextColor(Color.WHITE);timeout.setBackground(bg(Color.rgb(30,24,48),34));LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(-1,dp(54));tp.setMargins(0,dp(12),0,0);r.addView(timeout,tp);
 
   Switch onlyIsland=new Switch(this);onlyIsland.setText("🔔  להציג התראות רק באי הדינמי");onlyIsland.setTextColor(Color.WHITE);onlyIsland.setTextSize(15);onlyIsland.setPadding(dp(8),dp(10),dp(8),dp(10));
   SharedPreferences pref=getSharedPreferences("island_settings",MODE_PRIVATE);

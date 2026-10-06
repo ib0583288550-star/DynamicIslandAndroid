@@ -28,14 +28,14 @@ public class IslandService extends Service {
  WindowManager wm; LinearLayout pill,topRow,controls; TextView icon,label,sub,timeText; ImageButton switchButton, aiButton; ImageView artwork;
  Bitmap artworkBitmap; Handler h=new Handler(Looper.getMainLooper());
  boolean expanded=false; public static IslandService current;
- int widthDp=218,heightDp=42,topDp=6; int eventTimeout=3200,autoCloseMs=3000; boolean voiceAssistantButton=true;
+ int widthDp=218,heightDp=42,topDp=6; int cornerPercent=100; int eventTimeout=3200,autoCloseMs=3000; boolean voiceAssistantButton=true;
 
  int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
- GradientDrawable bg(int c,float r){GradientDrawable x=new GradientDrawable();x.setColor(c);x.setCornerRadius(dp(r));x.setStroke(dp(1),Color.argb(55,255,255,255));return x;}
+ GradientDrawable bg(int c,float r){GradientDrawable x=new GradientDrawable();x.setColor(c);x.setCornerRadius(dp(r));x.setStroke(dp(1),Color.argb(55,255,255,255));return x;}\n float cornerRadius(){int h=expanded?132:heightDp;int w=expanded?Math.min(Math.max(widthDp,280),340):widthDp;return Math.min(w,h)*0.5f*(Math.max(0,Math.min(100,cornerPercent))/100f);}
 
  @Override public void onCreate(){super.onCreate();current=this;loadSettings();startForeground(7,notifyMe());show();if(IslandNotificationListener.pendingController!=null)setController(IslandNotificationListener.pendingController);if(!IslandNotificationListener.pendingTitle.isEmpty())showEvent(IslandNotificationListener.pendingTitle,IslandNotificationListener.pendingDetail);}
 
- void loadSettings(){SharedPreferences p=getSharedPreferences("island_settings",MODE_PRIVATE);widthDp=p.getInt("width_dp",218);heightDp=p.getInt("height_dp",42);topDp=p.getInt("top_dp",6);eventTimeout=p.getInt("notification_timeout_ms",3200);autoCloseMs=p.getInt("auto_close_ms",3000);voiceAssistantButton=p.getBoolean("voice_assistant_button",true);}
+ void loadSettings(){SharedPreferences p=getSharedPreferences("island_settings",MODE_PRIVATE);widthDp=p.getInt("width_dp",218);heightDp=p.getInt("height_dp",42);topDp=p.getInt("top_dp",6);cornerPercent=p.getInt("corner_percent",100);eventTimeout=p.getInt("notification_timeout_ms",3200);autoCloseMs=p.getInt("auto_close_ms",3000);voiceAssistantButton=p.getBoolean("voice_assistant_button",true);}
  public static void applySettings(){if(current!=null){current.loadSettings();current.applyLayout();current.render();}}
  void applyLayout(){if(pill==null||wm==null)return;WindowManager.LayoutParams p=(WindowManager.LayoutParams)pill.getLayoutParams();p.width=dp(expanded?Math.min(Math.max(widthDp,280),340):widthDp);p.height=dp(expanded?132:heightDp);p.y=dp(topDp);try{wm.updateViewLayout(pill,p);}catch(Exception ignored){}}
 
@@ -90,11 +90,11 @@ public class IslandService extends Service {
   switchButton.setVisibility(showSwitch && expanded?View.VISIBLE:View.GONE);
   aiButton.setVisibility(expanded && voiceAssistantButton?View.VISIBLE:View.GONE);
   if(expanded){
-   pill.setBackground(bg(Color.BLACK,24));controls.setVisibility(showPlayer?View.VISIBLE:View.GONE);
+   pill.setBackground(bg(Color.BLACK,cornerRadius()));controls.setVisibility(showPlayer?View.VISIBLE:View.GONE);
    timeText.setVisibility(showPlayer&&expanded?View.VISIBLE:View.GONE);
    artwork.getLayoutParams().width=dp(showPlayer?56:32);artwork.getLayoutParams().height=dp(showPlayer?56:32);artwork.requestLayout();
   }else{
-   pill.setBackground(bg(Color.BLACK,50));controls.setVisibility(View.GONE);timeText.setVisibility(View.GONE);
+   pill.setBackground(bg(Color.BLACK,cornerRadius()));controls.setVisibility(View.GONE);timeText.setVisibility(View.GONE);
    artwork.getLayoutParams().width=dp(34);artwork.getLayoutParams().height=dp(34);artwork.requestLayout();
   }
   if(notificationActive && !showingPlayer){
