@@ -71,6 +71,16 @@ public class MainActivity extends Activity {
  }
  SeekBar.OnSeekBarChangeListener simple(Runnable r){return new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean f){r.run();}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}};}
 
+ void showRoundnessDialog(SharedPreferences pref){
+  String[] items={"מלבן","קצת מעוגל","עגול מאוד","כמעט עיגול","עיגול מלא"};
+  int[] vals={0,25,50,75,100};
+  int cur=pref.getInt("corner_percent",100),checked=4;
+  for(int i=0;i<vals.length;i++)if(vals[i]==cur)checked=i;
+  new AlertDialog.Builder(this).setTitle("צורת האי — מלבן ↔ עיגול").setSingleChoiceItems(items,checked,(d,which)->{
+   pref.edit().putInt("corner_percent",vals[which]).apply();IslandService.applySettings();d.dismiss();
+  }).setNegativeButton("ביטול",null).show();
+ }
+
  void showAutoCloseDialog(SharedPreferences pref){
   String[] items={"1 שנייה","2 שניות","3 שניות","4 שניות","5 שניות","לא לסגור אוטומטית"};
   int[] vals={1000,2000,3000,4000,5000,0};

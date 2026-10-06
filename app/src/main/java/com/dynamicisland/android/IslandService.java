@@ -31,7 +31,8 @@ public class IslandService extends Service {
  int widthDp=218,heightDp=42,topDp=6; int cornerPercent=100; int eventTimeout=3200,autoCloseMs=3000; boolean voiceAssistantButton=true;
 
  int dp(float v){return (int)(v*getResources().getDisplayMetrics().density+.5f);}
- GradientDrawable bg(int c,float r){GradientDrawable x=new GradientDrawable();x.setColor(c);x.setCornerRadius(dp(r));x.setStroke(dp(1),Color.argb(55,255,255,255));return x;}\n float cornerRadius(){int h=expanded?132:heightDp;int w=expanded?Math.min(Math.max(widthDp,280),340):widthDp;return Math.min(w,h)*0.5f*(Math.max(0,Math.min(100,cornerPercent))/100f);}
+ GradientDrawable bg(int c,float r){GradientDrawable x=new GradientDrawable();x.setColor(c);x.setCornerRadius(dp(r));x.setStroke(dp(1),Color.argb(55,255,255,255));return x;}
+ float cornerRadius(){int h=expanded?132:heightDp;int w=expanded?Math.min(Math.max(widthDp,280),340):widthDp;return Math.min(w,h)*0.5f*(Math.max(0,Math.min(100,cornerPercent))/100f);}
 
  @Override public void onCreate(){super.onCreate();current=this;loadSettings();startForeground(7,notifyMe());show();if(IslandNotificationListener.pendingController!=null)setController(IslandNotificationListener.pendingController);if(!IslandNotificationListener.pendingTitle.isEmpty())showEvent(IslandNotificationListener.pendingTitle,IslandNotificationListener.pendingDetail);}
 
