@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.content.ComponentName;
 import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
+import android.media.session.PlaybackState;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.os.Bundle;
@@ -15,24 +16,44 @@ public class IslandNotificationListener extends NotificationListenerService {
  static MediaController pendingController;
  static String pendingTitle="", pendingDetail="";
 
+ MediaController chooseMedia(List<MediaController> sessions){
+  if(sessions==null||sessions.isEmpty())return null;
+  for(MediaController c:sessions){
+   try{
+    PlaybackState p=c.getPlaybackState();
+    if(p!=null&&p.getState()==PlaybackState.STATE_PLAYING)return c;
+   }catch(Exception ignored){}
+  }
+  return sessions.get(0);
+ }
+
  @Override public void onListenerConnected(){
   super.onListenerConnected();
   try{
    mediaManager=(MediaSessionManager)getSystemService(MEDIA_SESSION_SERVICE);
    ComponentName cn=new ComponentName(this,IslandNotificationListener.class);
    mediaListener=sessions->{
-    MediaController chosen=(sessions!=null&&!sessions.isEmpty())?sessions.get(0):null;
-    pendingController=chosen;
-    IslandService.setMediaController(chosen);
+    MediaController chosen=chooseMedia(sessions);
+    if(chosen!=null){
+     pendingController=chosen;
+     IslandService.setMediaController(chosen);
+    }
    };
    mediaManager.addOnActiveSessionsChangedListener(mediaListener,cn);
-   List<MediaController> sessions=mediaManager.getActiveSessions(cn);
-   MediaController chosen=(sessions!=null&&!sessions.isEmpty())?sessions.get(0):null;
-   pendingController=chosen;
-   IslandService.setMediaController(chosen);
+   MediaController chosen=chooseMedia(mediaManager.getActiveSessions(cn));
+   if(chosen!=null){
+    pendingController=chosen;
+    IslandService.setMediaController(chosen);
+   }
    if(!pendingTitle.isEmpty()) IslandService.event(pendingTitle,pendingDetail);
    postLatestNotification();
   }catch(Exception ignored){}
+ }
+
+ boolean isMediaNotification(Notification n){
+  if(n==null)return false;
+  if(Notification.CATEGORY_TRANSPORT.equals(n.category))return true;
+  return n.extras!=null && n.extras.get(Notification.EXTRA_MEDIA_SESSION)!=null;
  }
 
  void postLatestNotification(){
@@ -43,7 +64,7 @@ public class IslandNotificationListener extends NotificationListenerService {
     StatusBarNotification sbn=all[i];
     if(getPackageName().equals(sbn.getPackageName()))continue;
     Notification n=sbn.getNotification();
-    if(n==null||n.extras==null)continue;
+    if(n==null||n.extras==null||isMediaNotification(n))continue;
     Bundle e=n.extras;
     CharSequence title=e.getCharSequence(Notification.EXTRA_TITLE);
     CharSequence text=e.getCharSequence(Notification.EXTRA_TEXT);
@@ -67,7 +88,7 @@ public class IslandNotificationListener extends NotificationListenerService {
  @Override public void onNotificationPosted(StatusBarNotification sbn) {
   if(getPackageName().equals(sbn.getPackageName()))return;
   Notification n=sbn.getNotification();
-  if(n==null)return;
+  if(n==null||isMediaNotification(n))return;
   Bundle e=n.extras;
   if(e==null)return;
   CharSequence title=e.getCharSequence(Notification.EXTRA_TITLE);
@@ -77,9 +98,8 @@ public class IslandNotificationListener extends NotificationListenerService {
   pendingTitle=title==null?"התראה":title.toString();
   pendingDetail=text==null?"":text.toString();
   IslandService.event(pendingTitle,pendingDetail);
-  if(getSharedPreferences("island_settings",MODE_PRIVATE).getBoolean("only_island_notifications",false)){
-   try{cancelNotification(sbn.getKey());}catch(Exception ignored){}
-  }
+  // Do not cancel the system notification. Cancelling notifications here can interfere with media/player notifications.
  }
+
  @Override public void onNotificationRemoved(StatusBarNotification sbn){}
 }
