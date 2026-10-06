@@ -23,7 +23,7 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build signed test Release APK
+      - name: Build Release APK
         run: gradle assembleRelease --stacktrace
 
       - uses: actions/upload-artifact@v4
@@ -32,13 +32,11 @@ jobs:
           path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
 
-      - name: Build Debug APK
-        run: gradle assembleDebug --stacktrace
+      - name: Build Release AAB
+        run: gradle bundleRelease --stacktrace
 
       - uses: actions/upload-artifact@v4
         with:
-          name: DynamicIsland-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: DynamicIsland-release-aab-test
+          path: app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
-
-      # release-test trigger
