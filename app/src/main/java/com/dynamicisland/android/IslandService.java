@@ -7,6 +7,7 @@ import android.graphics.*;
 import android.graphics.drawable.GradientDrawable;
 import android.media.session.MediaController;
 import android.media.MediaMetadata;
+import android.graphics.Bitmap;
 import android.media.session.PlaybackState;
 import android.os.*;
 import android.provider.Settings;
@@ -20,7 +21,7 @@ public class IslandService extends Service {
  boolean notificationActive=false;
  String notificationTitle="", notificationDetail="";
  String mediaTitle="מוזיקה";
- WindowManager wm; LinearLayout pill,topRow,controls; TextView icon,label,sub; Handler h=new Handler(Looper.getMainLooper());
+ WindowManager wm; LinearLayout pill,topRow,controls; TextView icon,label,sub; ImageView artwork; Bitmap artworkBitmap; String mediaArtist=""; Handler h=new Handler(Looper.getMainLooper());
  boolean expanded=false; public static IslandService current;
  long timerEnd=0; String timerLabel="";
  int battery=100; boolean charging=false; int widthDp=218,heightDp=42,topDp=6; int eventTimeout=3200;
@@ -39,10 +40,11 @@ public class IslandService extends Service {
  void show(){if(!Settings.canDrawOverlays(this))return;wm=(WindowManager)getSystemService(WINDOW_SERVICE);
   pill=new LinearLayout(this);pill.setOrientation(LinearLayout.VERTICAL);pill.setGravity(Gravity.CENTER);pill.setPadding(dp(12),dp(5),dp(12),dp(5));pill.setBackground(bg(Color.BLACK,50));
   topRow=new LinearLayout(this);topRow.setOrientation(LinearLayout.HORIZONTAL);topRow.setGravity(Gravity.CENTER_VERTICAL);
+  artwork=new ImageView(this); artwork.setScaleType(ImageView.ScaleType.CENTER_CROP); artwork.setBackground(bg(Color.rgb(45,45,55),18));
   icon=new TextView(this);icon.setTextSize(12);icon.setGravity(Gravity.CENTER);
   label=new TextView(this);label.setTextColor(Color.WHITE);label.setTextSize(13);label.setTypeface(null,1);label.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);label.setSingleLine(true);
   sub=new TextView(this);sub.setTextColor(Color.LTGRAY);sub.setTextSize(11);sub.setGravity(Gravity.CENTER_VERTICAL|Gravity.RIGHT);sub.setSingleLine(true);
-  topRow.addView(icon,new LinearLayout.LayoutParams(dp(24),-1));topRow.addView(label,new LinearLayout.LayoutParams(0,-1,1));topRow.addView(sub,new LinearLayout.LayoutParams(dp(64),-1));pill.addView(topRow,new LinearLayout.LayoutParams(-1,0,1));
+  topRow.addView(artwork,new LinearLayout.LayoutParams(dp(30),dp(30)));topRow.addView(icon,new LinearLayout.LayoutParams(dp(24),-1));topRow.addView(label,new LinearLayout.LayoutParams(0,-1,1));topRow.addView(sub,new LinearLayout.LayoutParams(dp(64),-1));pill.addView(topRow,new LinearLayout.LayoutParams(-1,0,1));
   controls=new LinearLayout(this);controls.setOrientation(LinearLayout.HORIZONTAL);controls.setGravity(Gravity.CENTER);controls.setVisibility(View.GONE);pill.addView(controls,new LinearLayout.LayoutParams(-1,dp(44)));
   addControl("⏮",v->sendMedia(PlaybackState.ACTION_SKIP_TO_PREVIOUS));addControl("▶",v->toggleMedia());addControl("⏭",v->sendMedia(PlaybackState.ACTION_SKIP_TO_NEXT));
   pill.setOnClickListener(v->toggle());
@@ -51,14 +53,15 @@ public class IslandService extends Service {
 
  public static void setMediaController(MediaController c){if(current!=null)current.setController(c);}
  void setController(MediaController c){mediaController=c;mediaActive=c!=null;readMedia();render();}
- void readMedia(){if(mediaController==null)return;try{PlaybackState ps=mediaController.getPlaybackState();mediaPlaying=ps!=null&&ps.getState()==PlaybackState.STATE_PLAYING;MediaMetadata md=mediaController.getMetadata();String t=md==null?null:md.getString(MediaMetadata.METADATA_KEY_TITLE);mediaTitle=t==null||t.isEmpty()?"מוזיקה":t;}catch(Exception ignored){}}
+ void readMedia(){if(mediaController==null)return;try{PlaybackState ps=mediaController.getPlaybackState();mediaPlaying=ps!=null&&ps.getState()==PlaybackState.STATE_PLAYING;MediaMetadata md=mediaController.getMetadata();String t=md==null?null:md.getString(MediaMetadata.METADATA_KEY_TITLE);mediaArtist=md==null?"":String.valueOf(md.getText(MediaMetadata.METADATA_KEY_ARTIST)); artworkBitmap=md==null?null:md.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART); mediaTitle=t==null||t.isEmpty()?"מוזיקה":t;}catch(Exception ignored){}}
  void toggleMedia(){if(mediaController==null)return;try{if(mediaPlaying)mediaController.getTransportControls().pause();else mediaController.getTransportControls().play();}catch(Exception ignored){}h.postDelayed(()->{readMedia();render();},180);}
  void sendMedia(long action){if(mediaController==null)return;try{if(action==PlaybackState.ACTION_SKIP_TO_PREVIOUS)mediaController.getTransportControls().skipToPrevious();else mediaController.getTransportControls().skipToNext();}catch(Exception ignored){}h.postDelayed(()->{readMedia();render();},180);}
  void updateMedia(String title,boolean playing){mediaTitle=title==null||title.isEmpty()?"מוזיקה":title;mediaPlaying=playing;mediaActive=true;render();}
  void render(){if(pill==null)return;
+  if(artwork!=null){if(artworkBitmap!=null) artwork.setImageBitmap(artworkBitmap); else artwork.setImageResource(android.R.drawable.ic_media_play); artwork.setVisibility(mediaActive?View.VISIBLE:View.GONE);}
   if(expanded){pill.setBackground(bg(Color.rgb(25,18,38),30));controls.setVisibility(mediaActive?View.VISIBLE:View.GONE);}else{pill.setBackground(bg(Color.BLACK,50));controls.setVisibility(View.GONE);}
   if(notificationActive){icon.setText("●");icon.setTextColor(Color.rgb(90,210,255));label.setText(notificationTitle);sub.setText(notificationDetail);}
-  else if(mediaActive){icon.setText(mediaPlaying?"▶":"Ⅱ");icon.setTextColor(Color.rgb(255,90,180));label.setText(mediaTitle);sub.setText(mediaPlaying?"מנגן":"מושהה");}
+  else if(mediaActive){icon.setText(mediaPlaying?"▶":"Ⅱ");icon.setTextColor(Color.rgb(255,90,180));label.setText(mediaTitle);sub.setText(mediaPlaying?(mediaArtist.isEmpty()?"מנגן":mediaArtist):"מושהה");}
   else {icon.setText("");label.setText("");sub.setText("");}
   if(controls.getChildCount()>1)((Button)controls.getChildAt(1)).setText(mediaPlaying?"Ⅱ":"▶");
  }
