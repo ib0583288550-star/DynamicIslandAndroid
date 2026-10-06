@@ -40,7 +40,7 @@ public class MainActivity extends Activity {
   scroll.addView(r);
   setContentView(scroll);
 
-  start.setOnClickListener(v->{if(!Settings.canDrawOverlays(this)){startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));return;} startService(new Intent(this,IslandService.class));});
+  start.setOnClickListener(v->{if(!Settings.canDrawOverlays(this)){startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));return;} pref.edit().putBoolean("auto_start",true).apply(); startService(new Intent(this,IslandService.class));});
   notifAccess.setOnClickListener(v->startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")));
   demo.setOnClickListener(v->{if(!Settings.canDrawOverlays(this))startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName())));else startService(new Intent(this,IslandService.class).putExtra("demo",true));});
   size.setOnClickListener(v->showSizeDialog(pref));
@@ -54,9 +54,9 @@ public class MainActivity extends Activity {
   TextView h=tv("גובה האי",16);box.addView(h);
   SeekBar height=new SeekBar(this);height.setMax(116);height.setProgress(Math.max(0,Math.min(116,pref.getInt("height_dp",42)-24)));box.addView(height);
   TextView y=tv("מרחק מלמעלה",16);box.addView(y);
-  SeekBar top=new SeekBar(this);top.setMax(120);top.setProgress(Math.max(0,Math.min(120,pref.getInt("top_dp",6))));box.addView(top);
+  SeekBar top=new SeekBar(this);top.setMax(160);top.setProgress(Math.max(0,Math.min(160,pref.getInt("top_dp",6)+40)));box.addView(top);
   TextView values=tv("",14);box.addView(values);
-  Runnable update=()->{int ww=120+width.getProgress(),hh=24+height.getProgress(),yy=top.getProgress();values.setText("רוחב: "+ww+"dp   •   גובה: "+hh+"dp   •   מרחק מלמעלה: "+yy+"dp"); pref.edit().putInt("width_dp",ww).putInt("height_dp",hh).putInt("top_dp",yy).apply(); IslandService.applySettings();};
+  Runnable update=()->{int ww=120+width.getProgress(),hh=24+height.getProgress(),yy=top.getProgress()-40;values.setText("רוחב: "+ww+"dp   •   גובה: "+hh+"dp   •   מרחק מלמעלה: "+yy+"dp"); pref.edit().putInt("width_dp",ww).putInt("height_dp",hh).putInt("top_dp",yy).apply(); IslandService.applySettings();};
   width.setOnSeekBarChangeListener(simple(update));height.setOnSeekBarChangeListener(simple(update));top.setOnSeekBarChangeListener(simple(update));update.run();
   new AlertDialog.Builder(this).setTitle("התאמת האי").setView(box).setPositiveButton("סיום",null).setNegativeButton("ביטול",null).show();
  }
