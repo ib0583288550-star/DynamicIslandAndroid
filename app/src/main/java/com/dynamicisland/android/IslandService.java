@@ -16,6 +16,7 @@ public class IslandService extends Service {
     TextView icon,label,sub;
     Handler h=new Handler(Looper.getMainLooper());
     boolean expanded=false;
+    public static IslandService current;
     long demoUntil=0;
     int battery=100;
     boolean charging=false;
@@ -31,6 +32,7 @@ public class IslandService extends Service {
 
     @Override public void onCreate(){
         super.onCreate();
+        current=this;
         registerReceiver(batteryReceiver,new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         startForeground(7,notifyMe());
         show();
@@ -167,7 +169,12 @@ public class IslandService extends Service {
         },1800);
     }
 
+    public static void event(String title,String detail){
+        if(current!=null) current.showEvent(title,detail,"●");
+    }
+
     @Override public void onDestroy(){
+        current=null;
         try{unregisterReceiver(batteryReceiver);}catch(Exception ignored){}
         if(pill!=null&&wm!=null)try{wm.removeView(pill);}catch(Exception ignored){}
         super.onDestroy();
